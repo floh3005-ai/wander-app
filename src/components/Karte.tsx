@@ -46,6 +46,9 @@ interface Props {
   onFoto?: (id: string) => void
   /** Ein Ort am Weg wurde angetippt */
   onOrt?: (ort: Ort) => void
+  /** Über die Ortssuche gewählter Ort – wird mit Fähnchen und Pfeil markiert */
+  gesucht?: { lon: number; lat: number; name: string } | null
+  onGesuchtWeg?: () => void
   onKarteKlick: (lon: number, lat: number) => void
   onLinieKlick: (abschnitt: number, lon: number, lat: number) => void
   onVerschoben: (index: number, lon: number, lat: number) => void
@@ -453,6 +456,35 @@ export default function Karte(props: Props) {
       adressen.forEach((a) => URL.revokeObjectURL(a))
     }
   }, [props.fotos, bereit])
+
+  // Gesuchter Ort: Fähnchen mit Namen und Pfeil auf die Stelle
+  useEffect(() => {
+    const map = karte.current
+    const g = props.gesucht
+    if (!map || !bereit || !g) return
+    const el = document.createElement('div')
+    el.className = 'such-pin'
+    const schild = document.createElement('div')
+    schild.className = 'such-pin-schild'
+    const name = document.createElement('span')
+    name.textContent = g.name
+    const zu = document.createElement('button')
+    zu.type = 'button'
+    zu.textContent = '✕'
+    zu.setAttribute('aria-label', 'Markierung entfernen')
+    zu.addEventListener('click', (ev) => {
+      ev.stopPropagation()
+      aktuell.current.onGesuchtWeg?.()
+    })
+    schild.append(name, zu)
+    const pfeil = document.createElement('div')
+    pfeil.className = 'such-pin-pfeil'
+    el.append(schild, pfeil)
+    const m = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([g.lon, g.lat]).addTo(map)
+    return () => {
+      m.remove()
+    }
+  }, [props.gesucht?.lon, props.gesucht?.lat, props.gesucht?.name, bereit])
 
   // Aufgezeichnete Spur
   useEffect(() => {

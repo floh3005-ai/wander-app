@@ -2431,3 +2431,71 @@ summary:focus-visible {
   font-size: 12px;
   color: var(--grau);
 }
+
+/* Gesuchter Ort: Fähnchen mit Namen und Pfeil auf die Stelle */
+.such-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(80, 0, 60, 0.35));
+  animation: such-pin-huepf 0.9s ease-out 0.5s 2;
+}
+
+.such-pin-schild {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 230px;
+  padding: 5px 6px 5px 11px;
+  border-radius: 999px;
+  background: var(--fuchsia);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid #fff;
+}
+
+.such-pin-schild span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.such-pin-schild button {
+  pointer-events: auto;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-size: 11px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.such-pin-schild button:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.such-pin-pfeil {
+  width: 0;
+  height: 0;
+  margin-top: -2px;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 18px solid var(--fuchsia);
+}
+
+@keyframes such-pin-huepf {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  40% {
+    translate: 0 -12px;
+  }
+}

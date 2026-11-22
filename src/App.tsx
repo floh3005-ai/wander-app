@@ -110,6 +110,7 @@ export default function App() {
   const [wanderwege, setWanderwege] = useState(() => ladeAnsicht().wanderwege)
   const [suche, setSuche] = useState('')
   const [orte, setOrte] = useState<Treffer[] | null>(null)
+  const [gesucht, setGesucht] = useState<{ lon: number; lat: number; name: string } | null>(null)
   const [sichtbar, setSichtbar] = useState<Set<Kategorie>>(
     () => new Set<Kategorie>(['gipfel', 'aussicht', 'einkehr', 'schutz', 'burg', 'sehenswert', 'wasser']),
   )
@@ -610,6 +611,7 @@ export default function App() {
                   type="button"
                   onClick={() => {
                     fliege({ mitte: [o.lon, o.lat] })
+                    setGesucht({ lon: o.lon, lat: o.lat, name: o.name })
                     setOrte(null)
                   }}
                 >
@@ -832,6 +834,8 @@ export default function App() {
             orte={orteAufKarte}
             gewaehlterOrt={gewaehlterOrt}
             vorschau={vorschau}
+            gesucht={gesucht}
+            onGesuchtWeg={() => setGesucht(null)}
             fest={!!aktiv.aufzeichnung}
             fotos={aktiv.fotos}
             onFoto={(id) => setFotoOffen(aktiv.fotos?.find((f) => f.id === id) ?? null)}
