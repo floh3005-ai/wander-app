@@ -876,6 +876,8 @@ export default function App() {
             gewaehlterOrt={gewaehlterOrt}
             vorschau={vorschau}
             gesucht={gesucht}
+            onStartKlick={zurueckZumStart}
+            linieAus={freihand}
             onGesuchtWeg={() => setGesucht(null)}
             fest={!!aktiv.aufzeichnung}
             fotos={aktiv.fotos}

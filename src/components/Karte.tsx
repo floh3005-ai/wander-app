@@ -49,6 +49,10 @@ interface Props {
   /** Über die Ortssuche gewählter Ort – wird mit Fähnchen und Pfeil markiert */
   gesucht?: { lon: number; lat: number; name: string } | null
   onGesuchtWeg?: () => void
+  /** Klick auf den Startpunkt: Tour dorthin zurückführen */
+  onStartKlick?: () => void
+  /** Freihand: Klicks auf die Linie setzen einen neuen Endpunkt statt einen Zwischenpunkt */
+  linieAus?: boolean
   onKarteKlick: (lon: number, lat: number) => void
   onLinieKlick: (abschnitt: number, lon: number, lat: number) => void
   onVerschoben: (index: number, lon: number, lat: number) => void
@@ -213,7 +217,7 @@ export default function Karte(props: Props) {
         ],
         { layers: ['route-treffer'] },
       )
-      if (treffer.length > 0) {
+      if (treffer.length > 0 && !aktuell.current.linieAus) {
         const nr = Number(treffer[0].properties?.nr)
         aktuell.current.onLinieKlick(nr, e.lngLat.lng, e.lngLat.lat)
       } else {
@@ -310,7 +314,13 @@ export default function Karte(props: Props) {
       el.className = 'wp' + (i === 0 ? ' wp-start' : i === letzter ? ' wp-ziel' : '')
       el.textContent = i === 0 ? 'S' : i === letzter ? 'Z' : String(i)
       if (!props.fest) el.title = 'Ziehen = verschieben · Rechtsklick = entfernen'
-      el.addEventListener('click', (ev) => ev.stopPropagation())
+      if (i === 0 && letzter > 0 && !props.fest) el.title = 'Klick = Tour hier schließen · Ziehen = verschieben · Rechtsklick = entfernen'
+      el.addEventListener('click', (ev) => {
+        ev.stopPropagation()
+        if (i === 0 && letzter > 0 && !gezogen) aktuell.current.onStartKlick?.()
+      })
+      // Nach dem Ziehen feuert der Browser noch einen Klick – der soll die Tour nicht schließen
+      let gezogen = false
       el.addEventListener('contextmenu', (ev) => {
         ev.preventDefault()
         ev.stopPropagation()
@@ -319,7 +329,9 @@ export default function Karte(props: Props) {
       const m = new maplibregl.Marker({ element: el, draggable: !props.fest })
         .setLngLat([w.lon, w.lat])
         .addTo(map)
+      m.on('dragstart', () => (gezogen = true))
       m.on('dragend', () => {
+        setTimeout(() => (gezogen = false), 300)
         const pos = m.getLngLat()
         aktuell.current.onVerschoben(i, pos.lng, pos.lat)
       })
