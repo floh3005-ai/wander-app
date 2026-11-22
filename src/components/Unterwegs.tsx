@@ -230,6 +230,17 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     setHinweis('Deine Wanderung ist gespeichert.')
   }
 
+  /** Ein Bild an die laufende Wanderung hängen (mit Standort). */
+  async function haengeFotoAn(bild: Blob) {
+    const l = lauf.current
+    if (!l) return
+    const id = crypto.randomUUID()
+    await merkeBild(id, bild)
+    l.fotos = [...(l.fotos ?? []), { id, zeit: new Date().toISOString(), lon: l.letzte?.lon, lat: l.letzte?.lat }]
+    merkeLauf(l)
+    neuZeichnen()
+  }
+
   /** Foto aufnehmen und an die laufende Wanderung hängen (mit Standort). */
   async function foto() {
     const l = lauf.current
@@ -237,15 +248,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     setFotoLaeuft(true)
     try {
       const bild = await nimmFoto()
-      if (bild && lauf.current === l) {
-        const id = crypto.randomUUID()
-        await merkeBild(id, bild)
-        l.fotos = [
-          ...(l.fotos ?? []),
-          { id, zeit: new Date().toISOString(), lon: l.letzte?.lon, lat: l.letzte?.lat },
-        ]
-        merkeLauf(l)
-      }
+      if (bild && lauf.current === l) await haengeFotoAn(bild)
     } catch {
       setFehler('Das Foto konnte nicht gespeichert werden.')
     }
@@ -517,7 +520,14 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
           </div>
         )}
       </div>
-      {gipfelOffen && <GipfelFinder position={position} onSchliessen={() => setGipfelOffen(false)} />}
+      {gipfelOffen && (
+        <GipfelFinder
+          position={position}
+          hoehe={l.versatz !== null ? hoehe : null}
+          onSchliessen={() => setGipfelOffen(false)}
+          onFoto={fertig ? undefined : haengeFotoAn}
+        />
+      )}
     </div>
   )
 }

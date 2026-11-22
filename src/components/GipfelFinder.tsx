@@ -2,18 +2,27 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatKm } from '../lib/geo'
 import { gipfelRundum, richtungText, winkelUnterschied, type Gipfel } from '../lib/gipfel'
 import { starteKompass } from '../lib/kompass'
+import { ladeGelaende, type Gelaende } from '../lib/gelaende'
+import GipfelKamera from './GipfelKamera'
 import { starteOrtung } from '../lib/standort'
 
 interface Props {
   /** Standort, falls schon bekannt (laufende Aufzeichnung) */
   position: { lon: number; lat: number } | null
+  /** Eigene Höhe über dem Meer, falls bekannt – sonst wird das Gelände gefragt */
+  hoehe?: number | null
   onSchliessen: () => void
+  /** Bild mit Namensschildern speichern (nur während einer Aufzeichnung) */
+  onFoto?: (bild: Blob) => Promise<void>
 }
 
 const BLICKFELD = 70 // Grad, die im Panorama zu sehen sind
 const ZEILEN = 6
 
-export default function GipfelFinder({ position, onSchliessen }: Props) {
+export default function GipfelFinder({ position, hoehe: eigeneHoehe, onSchliessen, onFoto }: Props) {
+  const [ansicht, setAnsicht] = useState<'kamera' | 'liste'>('kamera')
+  // undefined = wird noch geladen, null = nicht verfügbar
+  const [gelaende, setGelaende] = useState<Gelaende | null | undefined>(undefined)
   const [ort, setOrt] = useState(position)
   const [gipfel, setGipfel] = useState<Gipfel[] | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
@@ -56,7 +65,19 @@ export default function GipfelFinder({ position, onSchliessen }: Props) {
     gipfelRundum(ort.lon, ort.lat)
       .then(setGipfel)
       .catch(() => setFehler('Die Gipfeldaten konnten nicht geladen werden. Dafür ist Netz nötig.'))
+    // Geländemodell für die Sichtprüfung (welche Gipfel sind verdeckt?)
+    ladeGelaende(ort.lon, ort.lat)
+      .then(setGelaende)
+      .catch(() => setGelaende(null))
   }, [ort])
+
+  // Augenhöhe: Gelände am Standort (oder die gemessene Höhe, falls höher) plus Körpergröße
+  const augen = useMemo(() => {
+    const boden = gelaende && ort ? gelaende.hoeheBei(ort.lon, ort.lat) : NaN
+    const gemessen = eigeneHoehe ?? NaN
+    if (!Number.isFinite(boden) && !Number.isFinite(gemessen)) return null
+    return Math.max(Number.isFinite(boden) ? boden : -Infinity, Number.isFinite(gemessen) ? gemessen : -Infinity) + 1.6
+  }, [gelaende, ort, eigeneHoehe])
 
   // Kompass
   useEffect(() => {
@@ -123,14 +144,35 @@ export default function GipfelFinder({ position, onSchliessen }: Props) {
     marken.push({ grad, text: grad % 45 === 0 ? richtungText(grad) : '', x: (ab / BLICKFELD + 0.5) * breite })
   }
 
+  if (ansicht === 'kamera' && ort && gipfel && gelaende !== undefined && augen !== null) {
+    return (
+      <GipfelKamera
+        ort={ort}
+        hoehe={augen}
+        gipfel={gipfel}
+        gelaende={gelaende}
+        onListe={() => setAnsicht('liste')}
+        onSchliessen={onSchliessen}
+        onFoto={onFoto}
+      />
+    )
+  }
+
   const hoehe = 250
   return (
     <div className="gipfel" role="dialog" aria-label="Gipfel-Finder">
       <header className="gipfel-kopf">
         <h2>⛰️ Gipfel-Finder</h2>
-        <button type="button" onClick={onSchliessen}>
-          Schließen
-        </button>
+        <div className="gipfel-kopf-knoepfe">
+          {ansicht === 'liste' && (
+            <button type="button" className="haupt" onClick={() => setAnsicht('kamera')}>
+              📷 Kamera
+            </button>
+          )}
+          <button type="button" onClick={onSchliessen}>
+            Schließen
+          </button>
+        </div>
       </header>
 
       {fehler && <p className="warnung">{fehler}</p>}

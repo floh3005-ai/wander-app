@@ -1874,3 +1874,165 @@ summary:focus-visible {
     height: calc(68dvh - var(--rand-oben));
   }
 }
+
+/* ---------- Gipfel-Finder mit Kamerabild ---------- */
+
+.gipfel-kopf-knoepfe {
+  display: flex;
+  gap: 6px;
+}
+
+.ar {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #10202c;
+  color: #fff;
+  overflow: hidden;
+}
+
+.ar-bild {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  background: linear-gradient(180deg, #8fd3ff 0%, #dff3ff 55%, #c9eeb8 100%);
+}
+
+.ar-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ar-video-aus {
+  display: none;
+}
+
+.ar-gipfel {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.ar-linie {
+  position: absolute;
+  left: -1px;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+.ar-schild {
+  position: absolute;
+  left: -6px;
+  transform-origin: 6px 100%;
+  transform: rotate(-45deg);
+  white-space: nowrap;
+  padding: 4px 10px 4px 7px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--fuchsia);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.ar-schild:hover:not(:disabled) {
+  background: var(--fuchsia-dunkel);
+}
+
+.ar-schild small {
+  font-weight: 400;
+  font-size: 12px;
+  opacity: 0.95;
+}
+
+.ar-ungeprueft {
+  opacity: 0.6;
+}
+
+.ar-kopf {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(10px + var(--rand-oben)) 12px 10px;
+  pointer-events: none;
+}
+
+.ar-kopf > * {
+  pointer-events: auto;
+}
+
+.ar-richtung {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(16, 32, 44, 0.65);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ar-unten {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px calc(12px + var(--rand-unten));
+  background: linear-gradient(180deg, rgba(16, 32, 44, 0) 0%, rgba(16, 32, 44, 0.75) 35%);
+}
+
+.ar-info,
+.ar-fein p {
+  margin: 0;
+  padding: 7px 11px;
+  border-radius: 12px;
+  background: rgba(16, 32, 44, 0.7);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.ar-regler {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 11px;
+  border-radius: 12px;
+  background: rgba(16, 32, 44, 0.7);
+  font-size: 13px;
+}
+
+.ar-fein {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ar-knoepfe {
+  display: flex;
+  gap: 8px;
+}
+
+.ar-knoepfe button {
+  flex: 1;
+  padding: 10px 8px;
+  color: var(--text);
+}
+
+.ar-knoepfe button.haupt {
+  color: #fff;
+}
+
+.ar-kopf button {
+  color: var(--text);
+}
