@@ -5,16 +5,48 @@ const BROUTER = 'https://brouter.de/brouter'
 const PROFIL = 'hiking-mountain'
 
 /** Weg zwischen zwei Punkten am Wegenetz (OpenStreetMap) berechnen, mit Höhen. */
-export function route(a: Wegpunkt, b: Wegpunkt, signal?: AbortSignal): Promise<Punkt[]> {
-  return routeUeber([a, b], signal)
+export async function route(a: Wegpunkt, b: Wegpunkt, signal?: AbortSignal): Promise<Punkt[]> {
+  const normal = await routeUeber([a, b], signal)
+  // Der Planer meidet schwere Steige und läuft dafür Umwege. Wird es trotzdem
+  // schwierig (ab T3), bringt der Umweg nichts: dann den direkten Weg nehmen –
+  // aber nur, wenn er nicht schwerer ist als der Umweg und spürbar kürzer.
+  const schwer = hoechsteStufe(normal)
+  if (schwer < 3) return normal
+  try {
+    const direkt = await routeUeber([a, b], signal, true)
+    if (hoechsteStufe(direkt) <= schwer && laenge(direkt) < laenge(normal) * 0.9) return direkt
+  } catch {
+    // dann bleibt es beim normalen Ergebnis
+  }
+  return normal
+}
+
+function hoechsteStufe(weg: Punkt[]): number {
+  let max = 0
+  for (const p of weg) max = Math.max(max, (p[3] ?? 0) % 10)
+  return max
+}
+
+function laenge(weg: Punkt[]): number {
+  const rad = Math.PI / 180
+  let m = 0
+  for (let i = 1; i < weg.length; i++) {
+    const dx = (weg[i][0] - weg[i - 1][0]) * 111320 * Math.cos(weg[i][1] * rad)
+    const dy = (weg[i][1] - weg[i - 1][1]) * 110540
+    m += Math.hypot(dx, dy)
+  }
+  return m
 }
 
 /** Weg über mehrere Punkte in der angegebenen Reihenfolge. */
-export async function routeUeber(punkte: Wegpunkt[], signal?: AbortSignal): Promise<Punkt[]> {
+/**
+ * @param direkt schwere Steige nicht meiden, sondern wie jeden anderen Weg behandeln
+ */
+export async function routeUeber(punkte: Wegpunkt[], signal?: AbortSignal, direkt = false): Promise<Punkt[]> {
   const lonlats = punkte.map((p) => `${p.lon.toFixed(6)},${p.lat.toFixed(6)}`).join("|")
   // SAC_scale_limit=6: Ohne diese Angabe sperrt das Profil alle Wege ab T4 (Alpinwandern), dann
   // fehlen Steige wie über die Brettgabel. Leichte Wege bleiben bevorzugt, die App zeigt die Schwierigkeit.
-  const url = `${BROUTER}?lonlats=${lonlats}&profile=${PROFIL}&alternativeidx=0&format=geojson&timode=2&profile:SAC_scale_limit=6`
+  const url = `${BROUTER}?lonlats=${lonlats}&profile=${PROFIL}&alternativeidx=0&format=geojson&timode=2&profile:SAC_scale_limit=6${direkt ? '&profile:SAC_scale_preferred=6' : ''}`
   const antwort = await fetch(url, { signal })
   if (!antwort.ok) {
     const text = (await antwort.text()).trim()
