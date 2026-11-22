@@ -21,12 +21,14 @@ import { hoehenErgaenzen, hoehenFehlen } from './lib/hoehe'
 import { sucheAmWeg } from './lib/orte'
 import { alsTour, type Route } from './lib/vorlagen'
 import { freihandLinie, luftlinie, route } from './lib/brouter'
+import { amWanderweg, daneben } from './lib/wanderweg'
 import {
   formatDauer,
   formatKm,
   zeitFuerWeg,
   hoehenmeter,
   kumuliert,
+  entfernung,
   naechsterIndex,
   zusammensetzen,
 } from './lib/geo'
@@ -289,12 +291,31 @@ export default function App() {
       return
     }
     route(a, b)
-      .then((punkte) => trageEin(a, b, punkte))
-      .catch(() => {
-        setMeldung(
-          'Zwischen diesen Punkten wurde kein Weg gefunden – ich habe eine gerade Linie eingezeichnet. Setz den Punkt näher an einen Weg.',
-        )
-        trageEin(a, b, luftlinie(a, b))
+      .catch(() => null)
+      .then(async (punkte) => {
+        // Passt das Ergebnis? Der Routenplaner kennt nicht jeden eingezeichneten Weg:
+        // dann landet er weit neben dem Klick oder läuft einen großen Umweg.
+        const gerade = entfernung(a.lon, a.lat, b.lon, b.lat)
+        const meter = punkte ? kumuliert(punkte).at(-1)! : Infinity
+        const versetzt = punkte ? daneben(punkte, a, b) : Infinity
+        const umweg = meter > gerade * 2.5 + 300
+        if (versetzt <= 35 && !umweg) return trageEin(a, b, punkte!)
+
+        if (punkte) trageEin(a, b, punkte)
+        const markiert = await amWanderweg(a, b).catch(() => null)
+        if (markiert && (versetzt > 35 || markiert.meter < meter * 0.7)) {
+          trageEin(a, b, markiert.punkte)
+          setMeldung(`Dieses Stück folgt dem markierten Wanderweg „${markiert.name}“ – der Routenplaner kennt ihn nicht.`)
+        } else if (!punkte) {
+          setMeldung(
+            'Zwischen diesen Punkten wurde kein Weg gefunden – ich habe eine gerade Linie eingezeichnet. Für eingezeichnete Wege, die der Routenplaner nicht kennt: oben „Freihand“ einschalten.',
+          )
+          trageEin(a, b, luftlinie(a, b))
+        } else if (versetzt > 35) {
+          setMeldung(
+            'Der Routenplaner kennt an dieser Stelle keinen Weg und ist auf den nächsten bekannten ausgewichen. Zum Nachzeichnen oben „Freihand“ einschalten.',
+          )
+        }
       })
   }
 
