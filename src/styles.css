@@ -1836,3 +1836,41 @@ summary:focus-visible {
   flex: 1;
   min-width: 120px;
 }
+
+/* ---------- Abstand zu Statusleiste und Bildschirmrand (Handy-App) ---------- */
+
+:root {
+  --rand-oben: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --rand-unten: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+}
+
+.app {
+  padding-top: var(--rand-oben);
+  padding-bottom: var(--rand-unten);
+}
+
+.uw {
+  padding-top: var(--rand-oben);
+  padding-bottom: var(--rand-unten);
+}
+
+.uw-start {
+  padding-top: calc(16px + var(--rand-oben));
+}
+
+.gipfel {
+  padding-top: calc(14px + var(--rand-oben));
+  padding-bottom: calc(14px + var(--rand-unten));
+}
+
+.foto-gross {
+  padding-top: calc(16px + var(--rand-oben));
+  padding-bottom: calc(16px + var(--rand-unten));
+}
+
+@media (max-width: 800px) {
+  .karten-rahmen {
+    height: calc(68vh - var(--rand-oben));
+    height: calc(68dvh - var(--rand-oben));
+  }
+}
