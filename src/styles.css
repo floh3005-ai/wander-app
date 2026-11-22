@@ -2095,3 +2095,59 @@ summary:focus-visible {
 .uw-karte .maplibregl-ctrl-top-right {
   top: 84px;
 }
+
+/* ---------- Unterwegs: Route zu einem angetippten Ziel ---------- */
+
+.uw-daneben {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--grau);
+  font-size: 12.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.uw-ziel {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--gelb-hell);
+  border: 2px solid var(--gelb);
+}
+
+.uw-ziel p {
+  margin: 0 0 8px;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+.uw-umweg {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--gruen-hell);
+  border: 2px solid var(--gruen);
+  font-size: 14px;
+}
+
+.uw-umweg button {
+  flex: none;
+  font-size: 13px;
+  padding: 5px 12px;
+}
+
+.uw-werkzeug button {
+  font-size: 14px;
+  padding: 9px 4px;
+}
+
+.uw-zentrieren {
+  bottom: 46px;
+}

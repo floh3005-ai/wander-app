@@ -3,6 +3,7 @@ import GipfelFinder from './GipfelFinder'
 import Karte, { type Flug } from './Karte'
 import WetterUnterwegs from './WetterUnterwegs'
 import { fuehrungAus, hinweis as abbiegeText, meterText, stelleAufWeg } from '../lib/abbiegen'
+import { route } from '../lib/brouter'
 import { loescheBild, merkeBild, nimmFoto } from '../lib/fotos'
 import { entferneHinweis, vibriere, zeigeHinweis } from '../lib/signal'
 import {
@@ -26,7 +27,7 @@ import {
   zusammensetzen,
 } from '../lib/geo'
 import { istApp, starteOrtung, type Ortung } from '../lib/standort'
-import type { Tour } from '../lib/typen'
+import type { Punkt, Tour } from '../lib/typen'
 
 interface Props {
   touren: Tour[]
@@ -43,8 +44,6 @@ function neuerWegStand() {
   return {
     index: null as number | null,
     daneben: 0,
-    abseits: false,
-    abseitsZeit: 0,
     /** Abbiegestellen, für die schon vibriert wurde (Ankündigung / jetzt) */
     angesagt: new Set<number>(),
     jetzt: new Set<number>(),
@@ -78,6 +77,10 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
   const [folgen, setFolgen] = useState(true)
   const [gipfelOffen, setGipfelOffen] = useState(false)
   const [fotoLaeuft, setFotoLaeuft] = useState(false)
+  /** Abstecher: Route vom Standort zu einem angetippten Ziel */
+  const [umweg, setUmweg] = useState<{ name: string; abschnitt: Punkt[] } | null>(null)
+  const [zielFrage, setZielFrage] = useState<{ name: string; lon: number; lat: number } | null>(null)
+  const [zielLaedt, setZielLaedt] = useState(false)
   const [flug, setFlug] = useState<Flug | null>(null)
   const flugNr = useRef(0)
 
@@ -88,7 +91,10 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
 
   const tour = lauf.current?.tourId ? touren.find((t) => t.id === lauf.current!.tourId) : undefined
   // Weg der geplanten Tour samt Abbiegestellen
-  const fuehrung = useMemo(() => (tour ? fuehrungAus(tour.abschnitte) : null), [tour])
+  const fuehrung = useMemo(
+    () => (umweg ? fuehrungAus([umweg.abschnitt]) : tour ? fuehrungAus(tour.abschnitte) : null),
+    [tour, umweg],
+  )
   const fuehrungJetzt = useRef(fuehrung)
   fuehrungJetzt.current = fuehrung
   const wegStand = useRef(neuerWegStand())
@@ -120,22 +126,9 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     const stelle = stelleAufWeg(f, o.lon, o.lat, s.index)
     s.index = stelle.index
     s.daneben = stelle.daneben
-    const jetzt = Date.now()
-
-    if (stelle.daneben > ABSEITS) {
-      if (!s.abseits || jetzt - s.abseitsZeit > 90_000) {
-        vibriere(1400)
-        zeigeHinweis('Route verlassen', `Du bist etwa ${meterText(stelle.daneben)} neben der geplanten Route.`)
-        s.abseitsZeit = jetzt
-      }
-      s.abseits = true
-      return
-    }
-    if (s.abseits) {
-      s.abseits = false
-      vibriere(200)
-      zeigeHinweis('Wieder auf der Route', 'Weiter geht es wie geplant.')
-    }
+    // Neben der Route: bewusst kein Alarm – vielleicht ist es ein gewollter Abstecher.
+    // Die Hinweise pausieren einfach, bis man wieder auf dem Weg ist.
+    if (stelle.daneben > ABSEITS) return
 
     const naechste = f.liste.find((a) => a.meter >= f.meter[stelle.index] - 8)
     if (!naechste) return
@@ -153,6 +146,44 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
       vibriere(400)
       zeigeHinweis(`${h.pfeil} In ${meterText(bis)} ${h.text}`, 'Wander-App')
     }
+  }
+
+  /** Vom Standort zu einem Ziel routen (Alm, Gasthaus, beliebiger Punkt auf der Karte). */
+  async function routeZum(ziel: { name: string; lon: number; lat: number }) {
+    const ich = lauf.current?.letzte
+    if (!ich) {
+      setFehler('Dein Standort ist noch nicht bekannt.')
+      return
+    }
+    setZielLaedt(true)
+    setFehler(null)
+    try {
+      const abschnitt = await route({ lon: ich.lon, lat: ich.lat }, { lon: ziel.lon, lat: ziel.lat })
+      wegStand.current = neuerWegStand()
+      setUmweg({ name: ziel.name, abschnitt })
+      setZielFrage(null)
+      let w = Infinity
+      let s = Infinity
+      let o = -Infinity
+      let n = -Infinity
+      for (const p of abschnitt) {
+        if (p[0] < w) w = p[0]
+        if (p[0] > o) o = p[0]
+        if (p[1] < s) s = p[1]
+        if (p[1] > n) n = p[1]
+      }
+      setFolgen(false)
+      flugNr.current += 1
+      setFlug({ nr: flugNr.current, rahmen: [w, s, o, n] })
+    } catch {
+      setFehler('Dorthin wurde kein Weg gefunden – oder es fehlt gerade das Netz.')
+    }
+    setZielLaedt(false)
+  }
+
+  function umwegEnde() {
+    wegStand.current = neuerWegStand()
+    setUmweg(null)
   }
 
   /**
@@ -239,6 +270,8 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
   function starten(t?: Tour) {
     lauf.current = neuerLauf(t?.id)
     wegStand.current = neuerWegStand()
+    setUmweg(null)
+    setZielFrage(null)
     eichung.current = { laeuft: false, versuch: 0 }
     merkeLauf(lauf.current)
     setFertig(false)
@@ -438,6 +471,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
 
   let rest: Rest | null = null
   let abbiegen: { pfeil: string; oben: string; unten: string } | null = null
+  let abseits = 0
   if (fuehrung && fuehrung.punkte.length > 1 && l.letzte) {
     const stand = wegStand.current
     const stelle =
@@ -451,7 +485,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
 
     const naechste = fuehrung.liste.find((a) => a.meter >= fuehrung.meter[i] - 8)
     if (stelle.daneben > ABSEITS) {
-      abbiegen = { pfeil: '⚠️', oben: 'Route verlassen', unten: `etwa ${meterText(stelle.daneben)} daneben` }
+      abseits = stelle.daneben
     } else if (!naechste) {
       abbiegen = { pfeil: '🏁', oben: `Noch ${meterText(meter)}`, unten: 'dem Weg bis zum Ziel folgen' }
     } else {
@@ -477,8 +511,20 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     <div className="uw uw-laeuft">
       <div className="uw-karte">
         <Karte
-          wegpunkte={tour ? [tour.wegpunkte[0], tour.wegpunkte[tour.wegpunkte.length - 1]] : []}
-          abschnitte={tour ? tour.abschnitte : []}
+          wegpunkte={
+            umweg
+              ? [
+                  { lon: umweg.abschnitt[0][0], lat: umweg.abschnitt[0][1] },
+                  {
+                    lon: umweg.abschnitt[umweg.abschnitt.length - 1][0],
+                    lat: umweg.abschnitt[umweg.abschnitt.length - 1][1],
+                  },
+                ]
+              : tour
+                ? [tour.wegpunkte[0], tour.wegpunkte[tour.wegpunkte.length - 1]]
+                : []
+          }
+          abschnitte={umweg ? [umweg.abschnitt] : tour ? tour.abschnitte : []}
           hover={null}
           flug={flug}
           basis="topo"
@@ -492,13 +538,18 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
           folgen={folgen}
           onVonHandBewegt={() => setFolgen(false)}
           onAusschnitt={() => {}}
-          onKarteKlick={() => {}}
+          onKarteKlick={(lon, lat) => {
+            if (!fertig) setZielFrage({ name: 'Punkt auf der Karte', lon, lat })
+          }}
+          onOrt={(o) => {
+            if (!fertig) setZielFrage({ name: o.name, lon: o.lon, lat: o.lat })
+          }}
           onLinieKlick={() => {}}
           onVerschoben={() => {}}
           onEntfernen={() => {}}
         />
         {abbiegen && !fertig && (
-          <div className={abbiegen.pfeil === '⚠️' ? 'uw-abbiegen uw-abseits' : 'uw-abbiegen'} role="status">
+          <div className="uw-abbiegen" role="status">
             <span className="uw-pfeil" aria-hidden="true">
               {abbiegen.pfeil}
             </span>
@@ -506,7 +557,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
               <strong>{abbiegen.oben}</strong>
               <span>
                 {abbiegen.unten}
-                {fuehrung && !fuehrung.genau && abbiegen.pfeil !== '⚠️' ? ' (geschätzt)' : ''}
+                {fuehrung && !fuehrung.genau ? ' (geschätzt)' : ''}
               </span>
             </span>
           </div>
@@ -514,6 +565,9 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
         <div className={`uw-zustand ${abbiegen && !fertig ? 'uw-zustand-unten' : ''} ${bewegt && !l.pausiert && !fertig ? 'an' : ''}`}>
           {zustand}
         </div>
+        {abseits > 0 && !fertig && (
+          <div className="uw-daneben">abseits der Route · {meterText(abseits)}</div>
+        )}
         {!folgen && position && (
           <button type="button" className="uw-zentrieren haupt" onClick={() => setFolgen(true)}>
             Zu mir
@@ -523,6 +577,33 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
 
       <div className="uw-unten">
         {fehler && <p className="warnung">{fehler}</p>}
+        {zielFrage && !fertig && (
+          <div className="uw-ziel">
+            <p>
+              <strong>{zielFrage.name}</strong>
+              <br />
+              Route von hier dorthin berechnen?
+            </p>
+            <div className="uw-knoepfe">
+              <button type="button" className="haupt" disabled={zielLaedt} onClick={() => routeZum(zielFrage)}>
+                {zielLaedt ? 'Rechne …' : 'Route dorthin'}
+              </button>
+              <button type="button" onClick={() => setZielFrage(null)}>
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
+        {umweg && !fertig && (
+          <p className="uw-umweg">
+            <span>
+              Unterwegs zu <strong>{umweg.name}</strong>
+            </span>
+            <button type="button" onClick={umwegEnde}>
+              {tour ? 'Zurück zur Tour' : 'Route beenden'}
+            </button>
+          </p>
+        )}
 
         <dl className="uw-zahlen">
           <div>
@@ -597,6 +678,13 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
             </button>
             <button type="button" onClick={() => setGipfelOffen(true)}>
               ⛰️ Gipfel
+            </button>
+            <button
+              type="button"
+              disabled={zielLaedt || l.punkte.length === 0}
+              onClick={() => routeZum({ name: 'Startpunkt', lon: l.punkte[0][0], lat: l.punkte[0][1] })}
+            >
+              🏠 Zum Start
             </button>
           </div>
         )}

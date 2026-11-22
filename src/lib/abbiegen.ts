@@ -89,7 +89,9 @@ export function fuehrungAus(abschnitte: (Punkt[] | null)[]): Fuehrung {
     }
     if (beste) liste.push(beste)
   }
-  return { punkte, meter, liste, genau }
+  // Ganz am Anfang und kurz vor dem Ziel braucht es keinen Hinweis
+  const gesamt = meter[meter.length - 1] ?? 0
+  return { punkte, meter, liste: liste.filter((a) => a.meter > 15 && a.meter < gesamt - 10), genau }
 }
 
 /** Pfeil und Worte zu einem Abbiegewinkel. */

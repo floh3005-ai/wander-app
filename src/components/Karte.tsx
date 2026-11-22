@@ -42,6 +42,8 @@ interface Props {
   /** Fotos mit Standort – erscheinen als Kamera-Zeichen */
   fotos?: FotoInfo[]
   onFoto?: (id: string) => void
+  /** Ein Ort am Weg wurde angetippt */
+  onOrt?: (ort: Ort) => void
   onKarteKlick: (lon: number, lat: number) => void
   onLinieKlick: (abschnitt: number, lon: number, lat: number) => void
   onVerschoben: (index: number, lon: number, lat: number) => void
@@ -349,7 +351,10 @@ export default function Karte(props: Props) {
       el.className = 'ort-marke'
       el.textContent = zeichenFuer(o.kat)
       el.title = o.name
-      el.addEventListener('click', (ev) => ev.stopPropagation())
+      el.addEventListener('click', (ev) => {
+        ev.stopPropagation()
+        aktuell.current.onOrt?.(o)
+      })
       const inhalt = document.createElement('div')
       inhalt.className = 'ort-info'
       const titel = document.createElement('strong')
