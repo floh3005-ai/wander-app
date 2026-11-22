@@ -59,6 +59,23 @@ export async function routeUeber(punkte: Wegpunkt[], signal?: AbortSignal): Prom
   return weg
 }
 
+/**
+ * Freihand-Stück: gerade Linie zwischen zwei Punkten, alle rund 20 m ein Punkt,
+ * damit Höhen und Höhenprofil nachgetragen werden können.
+ */
+export function freihandLinie(a: Wegpunkt, b: Wegpunkt): Punkt[] {
+  const rad = Math.PI / 180
+  const dx = (b.lon - a.lon) * 111320 * Math.cos(((a.lat + b.lat) / 2) * rad)
+  const dy = (b.lat - a.lat) * 110540
+  const teile = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 20))
+  const out: Punkt[] = []
+  for (let i = 0; i <= teile; i++) {
+    const t = i / teile
+    out.push([a.lon + (b.lon - a.lon) * t, a.lat + (b.lat - a.lat) * t, NaN, 0, 0])
+  }
+  return out
+}
+
 /** Luftlinie als Notlösung, wenn kein Weg gefunden wird. */
 export function luftlinie(a: Wegpunkt, b: Wegpunkt): Punkt[] {
   return [

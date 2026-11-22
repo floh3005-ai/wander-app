@@ -2499,3 +2499,14 @@ summary:focus-visible {
     translate: 0 -12px;
   }
 }
+
+/* Freihand-Schalter: deutlich sichtbar, solange er an ist */
+.schalter label.freihand {
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
+.schalter label.freihand.an {
+  background: var(--gelb);
+  font-weight: 700;
+}

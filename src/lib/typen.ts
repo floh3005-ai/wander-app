@@ -10,6 +10,8 @@ export type Punkt = [number, number, number, number?, number?]
 export interface Wegpunkt {
   lon: number
   lat: number
+  /** Freihand: Das Stück, das an diesem Punkt endet, ist eine gerade, selbst gezeichnete Linie. */
+  frei?: boolean
 }
 
 export interface Tour {

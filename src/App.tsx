@@ -20,7 +20,7 @@ import Wetter from './components/Wetter'
 import { hoehenErgaenzen, hoehenFehlen } from './lib/hoehe'
 import { sucheAmWeg } from './lib/orte'
 import { alsTour, type Route } from './lib/vorlagen'
-import { luftlinie, route } from './lib/brouter'
+import { freihandLinie, luftlinie, route } from './lib/brouter'
 import {
   formatDauer,
   formatKm,
@@ -110,6 +110,7 @@ export default function App() {
   const [wanderwege, setWanderwege] = useState(() => ladeAnsicht().wanderwege)
   const [suche, setSuche] = useState('')
   const [orte, setOrte] = useState<Treffer[] | null>(null)
+  const [freihand, setFreihand] = useState(false)
   const [gesucht, setGesucht] = useState<{ lon: number; lat: number; name: string } | null>(null)
   const [sichtbar, setSichtbar] = useState<Set<Kategorie>>(
     () => new Set<Kategorie>(['gipfel', 'aussicht', 'einkehr', 'schutz', 'burg', 'sehenswert', 'wasser']),
@@ -278,6 +279,15 @@ export default function App() {
   }
 
   function berechne(a: Wegpunkt, b: Wegpunkt) {
+    if (b.frei) {
+      // Freihand: gerade Linie sofort zeigen, Höhen kommen nach
+      const linie = freihandLinie(a, b)
+      trageEin(a, b, linie)
+      hoehenErgaenzen(linie)
+        .then((mitHoehe) => trageEin(a, b, mitHoehe))
+        .catch(() => {})
+      return
+    }
     route(a, b)
       .then((punkte) => trageEin(a, b, punkte))
       .catch(() => {
@@ -304,7 +314,7 @@ export default function App() {
 
   function punktDazu(lon: number, lat: number) {
     if (gesperrt()) return
-    const neu: Wegpunkt = { lon, lat }
+    const neu: Wegpunkt = freihand && aktiv.wegpunkte.length > 0 ? { lon, lat, frei: true } : { lon, lat }
     const vorher = aktiv.wegpunkte[aktiv.wegpunkte.length - 1]
     aendere((t) => ({
       ...t,
@@ -316,7 +326,7 @@ export default function App() {
 
   function punktVerschoben(i: number, lon: number, lat: number) {
     if (gesperrt()) return
-    const neu: Wegpunkt = { lon, lat }
+    const neu: Wegpunkt = aktiv.wegpunkte[i]?.frei ? { lon, lat, frei: true } : { lon, lat }
     const davor = aktiv.wegpunkte[i - 1]
     const danach = aktiv.wegpunkte[i + 1]
     aendere((t) => {
@@ -354,6 +364,7 @@ export default function App() {
     if (!abschnitt || abschnitt.length < 3) return
     const k = Math.min(abschnitt.length - 2, Math.max(1, naechsterIndex(abschnitt, lon, lat)))
     const neu: Wegpunkt = { lon: abschnitt[k][0], lat: abschnitt[k][1] }
+    if (aktiv.wegpunkte[nr + 1]?.frei) neu.frei = true
     aendere((t) => {
       const wegpunkte = t.wegpunkte.slice()
       wegpunkte.splice(nr + 1, 0, neu)
@@ -374,7 +385,14 @@ export default function App() {
     if (gesperrt()) return
     aendere((t) => ({
       ...t,
-      wegpunkte: t.wegpunkte.slice().reverse(),
+      // Das Freihand-Zeichen gehört zum Stück, nicht zum Punkt – es wandert beim Umdrehen ans andere Ende
+      wegpunkte: t.wegpunkte
+        .slice()
+        .reverse()
+        .map((w, i, alle) => {
+          const frei = i > 0 && t.wegpunkte[alle.length - i]?.frei
+          return frei ? { lon: w.lon, lat: w.lat, frei: true } : { lon: w.lon, lat: w.lat }
+        }),
       abschnitte: t.abschnitte
         .slice()
         .reverse()
@@ -684,7 +702,9 @@ export default function App() {
           <p className="hinweis">
             {aktiv.wegpunkte.length === 0
               ? 'Klick auf die Karte, um den Startpunkt zu setzen.'
-              : aktiv.wegpunkte.length === 1
+              : freihand
+                ? 'Freihand ist an: Jeder Klick wird mit einem geraden Strich verbunden. So zeichnest Du Wege nach, die der Routenplaner nicht kennt. Danach Freihand wieder ausschalten.'
+                : aktiv.wegpunkte.length === 1
                 ? 'Jetzt den nächsten Punkt anklicken – der Weg wird automatisch auf das Wegenetz gelegt.'
                 : 'Punkt ziehen = Weg ändern · Klick auf die Linie = Punkt einfügen · Rechtsklick auf Punkt = entfernen'}
           </p>
@@ -856,6 +876,15 @@ export default function App() {
               />
               Wanderwege
             </label>
+            {!aktiv.aufzeichnung && (
+              <label
+                className={freihand ? 'freihand an' : 'freihand'}
+                title="Punkte mit geraden Strichen verbinden – für Wege, die der Routenplaner nicht kennt"
+              >
+                <input type="checkbox" checked={freihand} onChange={(e) => setFreihand(e.target.checked)} />
+                ✏️ Freihand
+              </label>
+            )}
           </div>
           {meldung && (
             <div className="meldung" role="status">
