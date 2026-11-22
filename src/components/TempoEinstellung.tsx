@@ -46,7 +46,7 @@ export default function TempoEinstellung({ onGeaendert }: Props) {
       {feld('Bergab', 'Höhenmeter pro Stunde', 'ab', 10)}
       <div className="tempo-knoepfe">
         <button type="button" onClick={() => uebernehme(MEIN_TEMPO)}>
-          Mein Tempo (2,5 / 200 / 350)
+          Mein Tempo (2,8 / 200 / 300)
         </button>
         <button type="button" onClick={() => uebernehme(NORM_TEMPO)}>
           Wanderer-Norm (4 / 300 / 500)

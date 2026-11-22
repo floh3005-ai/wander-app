@@ -74,12 +74,12 @@ export interface Tempo {
   ab: number
 }
 
-/** Anne-Katrins Tempo (22.11.2026): 2,5 km/h und 200 Hm/h, mit Hund und kurzen Stopps. */
-export const MEIN_TEMPO: Tempo = { kmh: 2.5, auf: 200, ab: 350 }
+/** Anne-Katrins Tempo (22.11.2026): 2,8 km/h, 200 Hm/h bergauf, 300 Hm/h bergab – mit Hund und kurzen Stopps. */
+export const MEIN_TEMPO: Tempo = { kmh: 2.8, auf: 200, ab: 300 }
 /** Übliche Wanderer-Norm (DIN 33466), reine Gehzeit ohne Pausen */
 export const NORM_TEMPO: Tempo = { kmh: 4, auf: 300, ab: 500 }
 
-const TEMPO_MERK = 'wander.tempo.v1'
+const TEMPO_MERK = 'wander.tempo.v2'
 
 function ladeTempo(): Tempo {
   try {
