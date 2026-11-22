@@ -2259,3 +2259,38 @@ summary:focus-visible {
   font-size: 13px;
   line-height: 1.6;
 }
+
+/* ---------- Fotos als Punkte auf der Karte ---------- */
+
+.foto-punkt {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gelb);
+  border: 3px solid var(--fuchsia);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.foto-punkt:hover {
+  transform-origin: center;
+  box-shadow: 0 0 0 4px rgba(194, 24, 155, 0.3), 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.foto-plopp {
+  pointer-events: none;
+}
+
+.foto-plopp .maplibregl-popup-content {
+  padding: 4px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+}
+
+.foto-plopp img {
+  display: block;
+  width: 220px;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 9px;
+}

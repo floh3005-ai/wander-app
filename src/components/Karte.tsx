@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import type { Feature } from 'geojson'
 import type { FotoInfo, Ort, Punkt, Wegpunkt } from '../lib/typen'
+import { holeBild } from '../lib/fotos'
 import { PROTOKOLL, richteOfflineKartenEin } from '../lib/offline'
 import { zeichenFuer } from '../lib/orte'
 import { strecken, stufe } from '../lib/schwierigkeit'
@@ -408,19 +409,49 @@ export default function Karte(props: Props) {
     const map = karte.current
     if (!map || !bereit) return
     fotoMarker.current.forEach((m) => m.remove())
+    // Aufploppendes Bild beim Darüberfahren
+    let plopp: maplibregl.Popup | null = null
+    const adressen = new Map<string, string>()
+    const zeige = async (id: string, lon: number, lat: number) => {
+      let adresse = adressen.get(id)
+      if (!adresse) {
+        const bild = await holeBild(id).catch(() => null)
+        if (!bild) return
+        adresse = URL.createObjectURL(bild)
+        adressen.set(id, adresse)
+      }
+      const img = document.createElement('img')
+      img.src = adresse
+      img.alt = 'Foto von der Tour'
+      plopp?.remove()
+      plopp = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 14, className: 'foto-plopp' })
+        .setLngLat([lon, lat])
+        .setDOMContent(img)
+        .addTo(map)
+    }
     fotoMarker.current = (props.fotos ?? [])
       .filter((f) => f.lon !== undefined && f.lat !== undefined)
       .map((f) => {
         const el = document.createElement('div')
-        el.className = 'foto-marke'
-        el.textContent = '📷'
-        el.title = 'Foto ansehen'
+        el.className = 'foto-punkt'
+        el.setAttribute('aria-label', 'Foto ansehen')
+        el.addEventListener('mouseenter', () => zeige(f.id, f.lon!, f.lat!))
+        el.addEventListener('mouseleave', () => {
+          plopp?.remove()
+          plopp = null
+        })
         el.addEventListener('click', (ev) => {
           ev.stopPropagation()
+          plopp?.remove()
+          plopp = null
           aktuell.current.onFoto?.(f.id)
         })
         return new maplibregl.Marker({ element: el }).setLngLat([f.lon!, f.lat!]).addTo(map)
       })
+    return () => {
+      plopp?.remove()
+      adressen.forEach((a) => URL.revokeObjectURL(a))
+    }
   }, [props.fotos, bereit])
 
   // Aufgezeichnete Spur

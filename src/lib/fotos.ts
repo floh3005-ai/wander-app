@@ -1,4 +1,5 @@
 import { Camera } from '@capacitor/camera'
+import exifr from 'exifr'
 import { cloud } from './cloud'
 import { istApp } from './standort'
 import type { FotoInfo } from './typen'
@@ -63,21 +64,47 @@ export async function nimmFoto(): Promise<Blob | null> {
     }
   }
   const dateien = await waehleDateien(false)
-  return dateien[0] ?? null
+  return dateien[0]?.bild ?? null
 }
 
 /** Bilder aus Dateien wählen (PC und Handy-Browser). */
-export function waehleDateien(mehrere: boolean): Promise<Blob[]> {
+export interface GewaehltesBild {
+  bild: Blob
+  /** Aufnahmeort aus dem Foto, falls es einen Ortsstempel hat */
+  lon?: number
+  lat?: number
+  /** Aufnahmezeit aus dem Foto (ISO), falls vorhanden */
+  zeit?: string
+}
+
+/** Ortsstempel und Aufnahmezeit aus der Bilddatei lesen (bevor sie verkleinert wird). */
+async function leseAngaben(datei: Blob): Promise<{ lon?: number; lat?: number; zeit?: string }> {
+  try {
+    const ort = await exifr.gps(datei).catch(() => undefined)
+    const d = await exifr.parse(datei, ['DateTimeOriginal', 'CreateDate']).catch(() => undefined)
+    const wann = d?.DateTimeOriginal ?? d?.CreateDate
+    return {
+      lon: typeof ort?.longitude === 'number' && Number.isFinite(ort.longitude) ? ort.longitude : undefined,
+      lat: typeof ort?.latitude === 'number' && Number.isFinite(ort.latitude) ? ort.latitude : undefined,
+      zeit: wann instanceof Date && !Number.isNaN(wann.getTime()) ? wann.toISOString() : undefined,
+    }
+  } catch {
+    return {}
+  }
+}
+
+export function waehleDateien(mehrere: boolean): Promise<GewaehltesBild[]> {
   return new Promise((ok) => {
     const feld = document.createElement('input')
     feld.type = 'file'
     feld.accept = 'image/*'
     feld.multiple = mehrere
     feld.onchange = async () => {
-      const out: Blob[] = []
+      const out: GewaehltesBild[] = []
       for (const datei of Array.from(feld.files ?? [])) {
         try {
-          out.push(await verkleinere(datei))
+          const angaben = await leseAngaben(datei)
+          out.push({ bild: await verkleinere(datei), ...angaben })
         } catch {
           // kein lesbares Bild – überspringen
         }

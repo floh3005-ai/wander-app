@@ -406,12 +406,24 @@ export default function App() {
     try {
       const bilder = await waehleDateien(true)
       const neu: FotoInfo[] = []
-      for (const bild of bilder) {
+      for (const b of bilder) {
         const id = crypto.randomUUID()
-        await merkeBild(id, bild)
-        neu.push({ id, zeit: new Date().toISOString() })
+        await merkeBild(id, b.bild)
+        // Ortsstempel und Aufnahmezeit aus dem Foto übernehmen, wenn vorhanden
+        neu.push({ id, zeit: b.zeit ?? new Date().toISOString(), lon: b.lon, lat: b.lat })
       }
-      if (neu.length > 0) aendere((t) => ({ ...t, fotos: [...(t.fotos ?? []), ...neu] }))
+      if (neu.length > 0) {
+        aendere((t) => ({
+          ...t,
+          fotos: [...(t.fotos ?? []), ...neu].sort((x, y) => (x.zeit < y.zeit ? -1 : 1)),
+        }))
+        const ohneOrt = neu.filter((f) => f.lon === undefined).length
+        setMeldung(
+          ohneOrt === 0
+            ? `${neu.length} Foto${neu.length === 1 ? '' : 's'} hinzugefügt und auf der Karte eingetragen.`
+            : `${neu.length} Foto${neu.length === 1 ? '' : 's'} hinzugefügt. ${ohneOrt} davon ohne Ortsstempel – ${ohneOrt === 1 ? 'es steht' : 'sie stehen'} nur in der Foto-Kachel.`,
+        )
+      }
     } catch {
       setMeldung('Die Fotos konnten nicht gespeichert werden.')
     }
