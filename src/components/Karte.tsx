@@ -3,7 +3,7 @@ import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import type { Feature } from 'geojson'
-import type { Ort, Punkt, Wegpunkt } from '../lib/typen'
+import type { FotoInfo, Ort, Punkt, Wegpunkt } from '../lib/typen'
 import { zeichenFuer } from '../lib/orte'
 import { strecken, stufe } from '../lib/schwierigkeit'
 import { ladeAnsicht, speichereAnsicht } from '../lib/speicher'
@@ -39,6 +39,9 @@ interface Props {
   /** Karte bleibt auf dem eigenen Standort */
   folgen?: boolean
   onVonHandBewegt?: () => void
+  /** Fotos mit Standort – erscheinen als Kamera-Zeichen */
+  fotos?: FotoInfo[]
+  onFoto?: (id: string) => void
   onKarteKlick: (lon: number, lat: number) => void
   onLinieKlick: (abschnitt: number, lon: number, lat: number) => void
   onVerschoben: (index: number, lon: number, lat: number) => void
@@ -146,6 +149,7 @@ export default function Karte(props: Props) {
   const hoverMarker = useRef<maplibregl.Marker | null>(null)
   const ortMarker = useRef(new Map<string, maplibregl.Marker>())
   const ichMarker = useRef<maplibregl.Marker | null>(null)
+  const fotoMarker = useRef<maplibregl.Marker[]>([])
   const aktuell = useRef(props)
   aktuell.current = props
   const [bereit, setBereit] = useState(false)
@@ -390,6 +394,26 @@ export default function Karte(props: Props) {
         : [],
     })
   }, [props.vorschau, bereit])
+
+  // Fotos
+  useEffect(() => {
+    const map = karte.current
+    if (!map || !bereit) return
+    fotoMarker.current.forEach((m) => m.remove())
+    fotoMarker.current = (props.fotos ?? [])
+      .filter((f) => f.lon !== undefined && f.lat !== undefined)
+      .map((f) => {
+        const el = document.createElement('div')
+        el.className = 'foto-marke'
+        el.textContent = '📷'
+        el.title = 'Foto ansehen'
+        el.addEventListener('click', (ev) => {
+          ev.stopPropagation()
+          aktuell.current.onFoto?.(f.id)
+        })
+        return new maplibregl.Marker({ element: el }).setLngLat([f.lon!, f.lat!]).addTo(map)
+      })
+  }, [props.fotos, bereit])
 
   // Aufgezeichnete Spur
   useEffect(() => {

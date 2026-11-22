@@ -1,6 +1,6 @@
 import { entfernung } from './geo'
 import type { Ortung } from './standort'
-import { neueTour, type Punkt, type Tour } from './typen'
+import { neueTour, type FotoInfo, type Punkt, type Tour } from './typen'
 
 /**
  * Eine laufende Aufzeichnung. Reine Daten – so lässt sie sich zwischenspeichern
@@ -27,6 +27,8 @@ export interface Lauf {
   versatz: number | null
   /** Letzte Standortmeldung (auch wenn sie nicht als Punkt übernommen wurde) */
   letzte: Ortung | null
+  /** Unterwegs aufgenommene Fotos */
+  fotos?: FotoInfo[]
   /** Von Hand pausiert */
   pausiert: boolean
   /** Nach einer Pause: nächsten Punkt ohne Strecke und Zeit ansetzen */
@@ -140,6 +142,7 @@ export function alsTour(lauf: Lauf, name: string, ende = Date.now()): Tour {
       { lon: letzter[0], lat: letzter[1] },
     ],
     abschnitte: [punkte],
+    fotos: lauf.fotos?.length ? lauf.fotos : undefined,
     aufzeichnung: {
       beginn: new Date(lauf.beginn).toISOString(),
       ende: new Date(ende).toISOString(),

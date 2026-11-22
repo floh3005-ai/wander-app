@@ -25,6 +25,8 @@ export interface Tour {
   orteFuer?: string
   /** Geplanter Tag und Startzeit, z. B. 2026-11-23 und 09:00 */
   start?: { datum: string; zeit: string }
+  /** Fotos zur Tour (die Bilder selbst liegen getrennt, siehe fotos.ts) */
+  fotos?: FotoInfo[]
   /**
    * Nur bei aufgezeichneten Wanderungen: die gemessenen Werte. Solche Touren
    * werden im Planer nicht verändert, sondern nur angesehen oder als Vorlage kopiert.
@@ -40,6 +42,15 @@ export interface Tour {
     /** ID der geplanten Tour, der gefolgt wurde */
     geplant?: string
   }
+}
+
+/** Angaben zu einem Foto. Das Bild selbst liegt auf dem Gerät und in der Cloud. */
+export interface FotoInfo {
+  id: string
+  /** Aufnahmezeit (ISO) */
+  zeit: string
+  lon?: number
+  lat?: number
 }
 
 export function neueTour(): Tour {

@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Karte, { type Flug } from './components/Karte'
 import Hoehenprofil from './components/Hoehenprofil'
 import AmWeg from './components/AmWeg'
+import Fotos, { FotoGross } from './components/Fotos'
 import Schwierigkeit from './components/Schwierigkeit'
+import { ladeFotosHoch, loescheBild, merkeBild, waehleDateien } from './lib/fotos'
 import Unterwegs from './components/Unterwegs'
 import { ladeLauf } from './lib/aufzeichnung'
 import { istApp } from './lib/standort'
@@ -38,6 +40,7 @@ import {
 import {
   neueTour,
   wegKennung,
+  type FotoInfo,
   type Kategorie,
   type Ort,
   type Punkt,
@@ -115,6 +118,8 @@ export default function App() {
   const [modus, setModus] = useState<'planen' | 'unterwegs'>(() =>
     istApp || window.innerWidth < 700 || ladeLauf() ? 'unterwegs' : 'planen',
   )
+  const [fotoOffen, setFotoOffen] = useState<FotoInfo | null>(null)
+  const [fotoLaedt, setFotoLaedt] = useState(false)
   const [email, setEmail] = useState<string | null>(null)
   const [abgleich, setAbgleich] = useState<AbgleichStand>('aus')
   const [abgleichZeit, setAbgleichZeit] = useState<Date | null>(null)
@@ -162,6 +167,7 @@ export default function App() {
         const neu = zusammenfuehren(jetzt, schnappschuss, ergebnis.touren)
         return neu.length > 0 ? neu : [neueTour()]
       })
+      await ladeFotosHoch()
       setAbgleich('ok')
       setAbgleichZeit(new Date())
       setAbgleichFehler(null)
@@ -388,6 +394,31 @@ export default function App() {
     } else {
       setTouren(rest)
     }
+  }
+
+  /** Fotos vom PC (oder aus der Handy-Galerie) an die Tour hängen. */
+  async function fotosDazu() {
+    setFotoLaedt(true)
+    try {
+      const bilder = await waehleDateien(true)
+      const neu: FotoInfo[] = []
+      for (const bild of bilder) {
+        const id = crypto.randomUUID()
+        await merkeBild(id, bild)
+        neu.push({ id, zeit: new Date().toISOString() })
+      }
+      if (neu.length > 0) aendere((t) => ({ ...t, fotos: [...(t.fotos ?? []), ...neu] }))
+    } catch {
+      setMeldung('Die Fotos konnten nicht gespeichert werden.')
+    }
+    setFotoLaedt(false)
+  }
+
+  function fotoLoeschen(foto: FotoInfo) {
+    if (!window.confirm('Dieses Foto wirklich löschen? Es ist dann überall weg.')) return
+    aendere((t) => ({ ...t, fotos: (t.fotos ?? []).filter((f) => f.id !== foto.id) }))
+    loescheBild(foto.id).catch(() => {})
+    setFotoOffen(null)
   }
 
   /** Sehenswertes und Nützliches entlang der aktuellen Tour suchen. */
@@ -687,6 +718,13 @@ export default function App() {
         </details>
 
         <details className="klapp">
+          <summary>
+            Fotos{aktiv.fotos?.length ? <span className="zahl">{aktiv.fotos.length}</span> : null}
+          </summary>
+          <Fotos fotos={aktiv.fotos ?? []} laedt={fotoLaedt} onDazu={fotosDazu} onOeffnen={setFotoOffen} />
+        </details>
+
+        <details className="klapp">
           <summary>Wanderrouten als Vorlage</summary>
           <Vorlagen
             ausschnitt={() => ausschnitt.current}
@@ -764,6 +802,8 @@ export default function App() {
             gewaehlterOrt={gewaehlterOrt}
             vorschau={vorschau}
             fest={!!aktiv.aufzeichnung}
+            fotos={aktiv.fotos}
+            onFoto={(id) => setFotoOffen(aktiv.fotos?.find((f) => f.id === id) ?? null)}
             onAusschnitt={(rahmen, zoom) => (ausschnitt.current = { rahmen, zoom })}
           />
           <div className="schalter">
@@ -790,6 +830,19 @@ export default function App() {
         </div>
         <Hoehenprofil punkte={zahlen.punkte} onHover={setHover} />
       </main>
+      {fotoOffen && (
+        <FotoGross
+          foto={fotoOffen}
+          onSchliessen={() => setFotoOffen(null)}
+          onLoeschen={() => fotoLoeschen(fotoOffen)}
+          onZeigen={() => {
+            if (fotoOffen.lon !== undefined && fotoOffen.lat !== undefined) {
+              fliege({ mitte: [fotoOffen.lon, fotoOffen.lat], zoom: 16 })
+            }
+            setFotoOffen(null)
+          }}
+        />
+      )}
     </div>
   )
 }

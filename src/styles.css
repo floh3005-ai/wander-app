@@ -1549,3 +1549,290 @@ summary:focus-visible {
     font-size: 12px;
   }
 }
+
+/* ---------- Stufe 5: Gipfel-Finder, Wetter unterwegs, Fotos ---------- */
+
+.klapp:nth-of-type(4) {
+  background: #f7dcf3;
+  border-top: 6px solid #e59bd9;
+}
+
+.uw-gipfel-knopf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  font-size: 18px;
+  background: var(--gruen);
+  border-color: #5fc23e;
+}
+
+.uw-gipfel-knopf span {
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.uw-werkzeug {
+  margin-bottom: 8px;
+}
+
+.uw-werkzeug button {
+  padding: 9px 10px;
+  font-size: 15px;
+  background: var(--gelb-hell);
+  border-color: var(--gelb);
+}
+
+.uw-wetter {
+  margin: 0 0 10px;
+}
+
+.uw-wetter ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 6px;
+}
+
+.uw-wetter li {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 2px;
+  border-radius: 12px;
+  background: var(--blau-hell);
+  font-size: 12px;
+}
+
+.uw-wetter-bild {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.uw-wetter-temp {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.uw-wetter-regen {
+  color: var(--grau);
+  min-height: 1.2em;
+}
+
+.uw-wetter-hinweis {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.gipfel {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  padding-top: calc(14px + env(safe-area-inset-top));
+  overflow-y: auto;
+  background: linear-gradient(180deg, #d9f0ff 0%, #e3f9d9 60%, #fff6c9 100%);
+}
+
+.gipfel-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gipfel-kopf h2 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--fuchsia);
+}
+
+.gipfel-bild {
+  flex: none;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #bfe6ff 0%, #eaf7ff 70%, #c9eeb8 100%);
+  border: 3px solid var(--blau);
+}
+
+.gipfel-bild svg {
+  display: block;
+}
+
+.gipfel-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.gipfel-wert {
+  font-size: 10.5px;
+  fill: var(--grau);
+}
+
+.gipfel-linie {
+  stroke: var(--fuchsia);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.gipfel-mitte {
+  stroke: var(--fuchsia);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+
+.gipfel-boden,
+.gipfel-strich {
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+
+.gipfel-himmel {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.gipfel-blick {
+  margin: 0;
+  text-align: center;
+  font-size: 15px;
+}
+
+.gipfel-regler {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.gipfel-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gipfel-liste li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.gipfel-liste span {
+  color: var(--grau);
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+.fotos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.foto-raster {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.foto-knopf,
+.foto-laedt,
+.foto-fehlt {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.foto-fehlt {
+  display: grid;
+  place-items: center;
+  color: var(--grau);
+  font-size: 13px;
+}
+
+.foto-knopf img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.foto-marke {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+  background: #fff;
+  border: 2px solid var(--blau);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.foto-gross {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(58, 15, 61, 0.8);
+}
+
+.foto-gross-inhalt {
+  max-width: min(1000px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.foto-gross-inhalt img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 130px);
+  object-fit: contain;
+  background: #1f1420;
+}
+
+.foto-gross-inhalt .foto-laedt,
+.foto-gross-inhalt .foto-fehlt {
+  width: min(480px, 80vw);
+  border-radius: 0;
+}
+
+.foto-gross-leiste {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+}
+
+.foto-gross-leiste span {
+  flex: 1;
+  min-width: 120px;
+}

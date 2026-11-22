@@ -89,7 +89,7 @@ function kachelY(lat: number): number {
 
 let vorlage: Promise<string> | null = null
 
-function kachelVorlage(): Promise<string> {
+export function kachelVorlage(): Promise<string> {
   if (!vorlage) {
     vorlage = fetch(TILEJSON)
       .then((r) => {

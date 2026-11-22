@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import GipfelFinder from './GipfelFinder'
 import Karte, { type Flug } from './Karte'
+import WetterUnterwegs from './WetterUnterwegs'
+import { loescheBild, merkeBild, nimmFoto } from '../lib/fotos'
 import {
   alsTour,
   formatUhr,
@@ -58,6 +61,8 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
   const [fehler, setFehler] = useState<string | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [folgen, setFolgen] = useState(true)
+  const [gipfelOffen, setGipfelOffen] = useState(false)
+  const [fotoLaeuft, setFotoLaeuft] = useState(false)
   const [flug, setFlug] = useState<Flug | null>(null)
   const flugNr = useRef(0)
 
@@ -225,8 +230,31 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     setHinweis('Deine Wanderung ist gespeichert.')
   }
 
+  /** Foto aufnehmen und an die laufende Wanderung hängen (mit Standort). */
+  async function foto() {
+    const l = lauf.current
+    if (!l || fotoLaeuft) return
+    setFotoLaeuft(true)
+    try {
+      const bild = await nimmFoto()
+      if (bild && lauf.current === l) {
+        const id = crypto.randomUUID()
+        await merkeBild(id, bild)
+        l.fotos = [
+          ...(l.fotos ?? []),
+          { id, zeit: new Date().toISOString(), lon: l.letzte?.lon, lat: l.letzte?.lat },
+        ]
+        merkeLauf(l)
+      }
+    } catch {
+      setFehler('Das Foto konnte nicht gespeichert werden.')
+    }
+    setFotoLaeuft(false)
+  }
+
   function verwerfen() {
     if (!window.confirm('Aufzeichnung wirklich verwerfen? Sie ist dann weg.')) return
+    for (const f of lauf.current?.fotos ?? []) loescheBild(f.id).catch(() => {})
     lauf.current = null
     merkeLauf(null)
     setFertig(false)
@@ -258,6 +286,12 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
           🥾 Frei aufzeichnen
           <span>Einfach loslaufen – ohne geplante Tour</span>
         </button>
+
+        <button type="button" className="uw-gipfel-knopf" onClick={() => setGipfelOffen(true)}>
+          ⛰️ Gipfel-Finder
+          <span>Welche Berge sind rundum zu sehen?</span>
+        </button>
+        {gipfelOffen && <GipfelFinder position={null} onSchliessen={() => setGipfelOffen(false)} />}
 
         {!istApp && (
           <p className="uw-app-hinweis">
@@ -431,11 +465,19 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
             Noch ca. {formatDauer(rest.minuten)} Gehzeit und {Math.round(rest.auf)} m bergauf bis zum Ziel
           </p>
         )}
+        {l.letzte && !fertig && (
+          <WetterUnterwegs
+            lon={l.letzte.lon}
+            lat={l.letzte.lat}
+            hoehe={l.versatz !== null ? hoehe : null}
+            stunden={rest ? rest.minuten / 60 : 3}
+          />
+        )}
         {hoehe !== null && l.versatz === null && (
           <p className="leise">Höhe noch ungeeicht (GPS-Rohwert) – wird berichtigt, sobald Netz da ist.</p>
         )}
 
-        {fertig ? (
+        {fertig && (
           <div className="uw-fertig">
             <label className="feld">
               <span>Name der Wanderung</span>
@@ -453,7 +495,18 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
               </button>
             </div>
           </div>
-        ) : (
+        )}
+        {fertig ? null : (
+          <div className="uw-knoepfe uw-werkzeug">
+            <button type="button" disabled={fotoLaeuft} onClick={foto}>
+              📷 Foto{l.fotos?.length ? ` (${l.fotos.length})` : ''}
+            </button>
+            <button type="button" onClick={() => setGipfelOffen(true)}>
+              ⛰️ Gipfel
+            </button>
+          </div>
+        )}
+        {fertig ? null : (
           <div className="uw-knoepfe">
             <button type="button" onClick={pause}>
               {l.pausiert ? '▶ Weiter' : '⏸ Pause'}
@@ -464,6 +517,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
           </div>
         )}
       </div>
+      {gipfelOffen && <GipfelFinder position={position} onSchliessen={() => setGipfelOffen(false)} />}
     </div>
   )
 }
