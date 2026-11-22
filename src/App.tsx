@@ -779,7 +779,7 @@ export default function App() {
                 checked={wanderwege}
                 onChange={(e) => setWanderwege(e.target.checked)}
               />
-              Markierte Wanderwege
+              Wanderwege
             </label>
           </div>
           {meldung && (

@@ -160,6 +160,7 @@ export default function Karte(props: Props) {
       zoom: start.zoom,
       maxZoom: 18,
       dragRotate: false,
+      attributionControl: { compact: true },
       pitchWithRotate: false,
     })
     karte.current = map
@@ -175,7 +176,15 @@ export default function Karte(props: Props) {
       const b = map.getBounds()
       aktuell.current.onAusschnitt([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()], map.getZoom())
     }
+    // Die Quellenangabe muss laut Lizenz erreichbar bleiben – sie steckt hinter dem „i".
+    const einklappen = () => {
+      const angabe = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
+      angabe?.classList.remove('maplibregl-compact-show')
+      angabe?.removeAttribute('open')
+    }
+    map.once('load', einklappen)
     map.once('style.load', () => {
+      einklappen()
       setBereit(true)
       melde()
     })

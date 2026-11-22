@@ -47,9 +47,7 @@ export default function Hoehenprofil({ punkte, onHover }: Props) {
 
   if (punkte.length < 2 || !Number.isFinite(daten.min) || daten.gesamt === 0) {
     return (
-      <div ref={rahmen} className="profil profil-leer">
-        Das Höhenprofil erscheint, sobald Deine Tour zwei Punkte hat.
-      </div>
+      <div ref={rahmen} className="profil profil-versteckt" />
     )
   }
 

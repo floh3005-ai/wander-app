@@ -97,11 +97,27 @@ export default function Konto(props: Props) {
           ? `In der Cloud gesichert · ${props.zuletzt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr`
           : 'Angemeldet'
 
+  const punkt = props.stand === 'fehler' ? 'rot' : props.stand === 'laeuft' ? 'gelb' : 'gruen'
+
+  // Läuft alles, reicht eine schmale Zeile. Antippen klappt die Einzelheiten auf.
+  if (!offen && props.stand !== 'fehler') {
+    return (
+      <button type="button" className="konto konto-klein" onClick={() => setOffen(true)} title="Cloud-Einstellungen zeigen">
+        <span className={`konto-punkt ${punkt}`} />
+        <span className="konto-text">{text}</span>
+        <span aria-hidden="true">▾</span>
+      </button>
+    )
+  }
+
   return (
     <div className="konto konto-spalte">
       <div className="konto-zeile">
-        <span className={`konto-punkt ${props.stand === 'fehler' ? 'rot' : props.stand === 'laeuft' ? 'gelb' : 'gruen'}`} />
+        <span className={`konto-punkt ${punkt}`} />
         <span className="konto-text">{text}</span>
+        <button type="button" onClick={() => setOffen(false)} aria-label="Einklappen">
+          ▴
+        </button>
       </div>
       <div className="konto-zeile">
         <span className="konto-mail">{props.email}</span>
