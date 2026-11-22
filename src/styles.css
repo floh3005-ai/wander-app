@@ -1,0 +1,1217 @@
+:root {
+  /* Fröhliches Farbkleid: Fuchsia, Pink, Hellblau, Gelb, Hellgrün */
+  --fuchsia: #c2189b;
+  --fuchsia-dunkel: #8e0f73;
+  --pink: #ff6fb1;
+  --pink-hell: #ffe0ef;
+  --blau: #8fd3ff;
+  --blau-hell: #dff3ff;
+  --gelb: #ffd84a;
+  --gelb-hell: #fff6c9;
+  --gruen: #9be37f;
+  --gruen-hell: #e3f9d9;
+
+  --haupt: var(--fuchsia);
+  --hell: var(--pink-hell);
+  --weg: #c2189b;
+  --text: #3a0f3d;
+  --grau: #6e4a70;
+  --linie: #f3bcd9;
+  --flaeche: #fff0f7;
+  --weiss: #ffffff;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--flaeche);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--linie);
+  background: var(--weiss);
+  border-radius: 8px;
+  padding: 7px 11px;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--haupt);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.haupt {
+  background: var(--haupt);
+  border-color: var(--haupt);
+  color: var(--weiss);
+}
+
+input[type='text'],
+input[type='search'] {
+  width: 100%;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--weiss);
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--haupt);
+  outline-offset: 1px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  height: 100%;
+}
+
+/* ---------- Seitenleiste ---------- */
+
+.seite {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  overflow-y: auto;
+  border-right: 1px solid var(--linie);
+  background: var(--flaeche);
+}
+
+.kopf {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.kopf h1 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--haupt);
+}
+
+.stufe {
+  color: var(--grau);
+  font-size: 13px;
+}
+
+.suche {
+  display: flex;
+  gap: 6px;
+}
+
+.orte {
+  list-style: none;
+  margin: -8px 0 0;
+  padding: 4px;
+  background: var(--weiss);
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+}
+
+.orte button {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  padding: 6px 8px;
+}
+
+.orte button:hover {
+  background: var(--hell);
+}
+
+.orte span,
+.orte .leer {
+  color: var(--grau);
+  font-size: 13px;
+}
+
+.orte .leer {
+  padding: 6px 8px;
+}
+
+.karte-block,
+.liste-block {
+  background: var(--weiss);
+  border: 1px solid var(--linie);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.feld span {
+  display: block;
+  font-size: 13px;
+  color: var(--grau);
+  margin-bottom: 4px;
+}
+
+.zahlen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  margin: 14px 0;
+}
+
+.zahlen div {
+  min-width: 0;
+}
+
+.zahlen dt {
+  font-size: 12px;
+  color: var(--grau);
+}
+
+.zahlen dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hinweis {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  background: var(--hell);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.knoepfe {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.knoepfe button {
+  font-size: 13.5px;
+}
+
+.status {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--grau);
+}
+
+.liste-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.liste-kopf h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.liste-kopf div {
+  display: flex;
+  gap: 6px;
+}
+
+.liste-kopf button {
+  font-size: 13px;
+  padding: 6px 9px;
+}
+
+.touren {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.touren li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px 8px;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.touren li.aktiv {
+  border-color: var(--haupt);
+  background: var(--hell);
+}
+
+.touren li.aktiv .tour-info {
+  grid-column: 1;
+}
+
+.touren li.aktiv .weg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.tour-knopf {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  border: 0;
+  padding: 0;
+  background: none;
+  min-width: 0;
+}
+
+.tour-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.tour-info {
+  font-size: 12.5px;
+  color: var(--grau);
+}
+
+.weg {
+  font-size: 12.5px;
+  padding: 4px 8px;
+  color: var(--grau);
+}
+
+/* ---------- Karte ---------- */
+
+.haupt-bereich {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.karten-rahmen {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.karte {
+  position: absolute;
+  inset: 0;
+}
+
+.schalter {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--weiss);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  font-size: 13px;
+}
+
+.schalter button {
+  border: 0;
+  padding: 5px 10px;
+}
+
+.schalter button.an {
+  background: var(--haupt);
+  color: var(--weiss);
+}
+
+.schalter label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.meldung {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  max-width: min(520px, calc(100% - 32px));
+  padding: 10px 14px;
+  background: #1f2a22;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.wp {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--weiss);
+  border: 3px solid var(--weg);
+  color: var(--weg);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  cursor: grab;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  user-select: none;
+}
+
+.wp-start {
+  background: var(--haupt);
+  border-color: var(--weiss);
+  color: var(--weiss);
+}
+
+.wp-ziel {
+  background: var(--weg);
+  border-color: var(--weiss);
+  color: var(--weiss);
+}
+
+.hover-punkt {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+/* ---------- Höhenprofil ---------- */
+
+.profil {
+  position: relative;
+  height: 150px;
+  flex: none;
+  background: var(--weiss);
+  border-top: 1px solid var(--linie);
+  overflow: hidden;
+}
+
+.profil svg {
+  display: block;
+  touch-action: none;
+}
+
+.profil-leer {
+  display: grid;
+  place-items: center;
+  color: var(--grau);
+  font-size: 14px;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.profil-gitter {
+  stroke: var(--linie);
+  stroke-width: 1;
+}
+
+.profil-text {
+  fill: var(--grau);
+  font-size: 11px;
+}
+
+.profil-flaeche {
+  fill: var(--haupt);
+  opacity: 0.18;
+}
+
+.profil-linie {
+  fill: none;
+  stroke: var(--haupt);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.profil-zeiger {
+  stroke: #1d4ed8;
+  stroke-width: 1;
+}
+
+.profil-punkt {
+  fill: #1d4ed8;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.profil-info {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  padding: 2px 8px;
+  background: var(--weiss);
+  border: 1px solid var(--linie);
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Schmale Fenster ---------- */
+
+@media (max-width: 800px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 55vh auto;
+    height: auto;
+    min-height: 100%;
+  }
+
+  .haupt-bereich {
+    grid-row: 1;
+  }
+
+  .seite {
+    border-right: 0;
+    border-top: 1px solid var(--linie);
+  }
+}
+
+/* ---------- Stufe 2: Wetter, Am Weg, Vorlagen ---------- */
+
+.klapp {
+  background: var(--weiss);
+  border: 1px solid var(--linie);
+  border-radius: 12px;
+  padding: 0 14px;
+}
+
+.klapp > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.klapp > summary::-webkit-details-marker {
+  display: none;
+}
+
+.klapp > summary::after {
+  content: '▾';
+  margin-left: auto;
+  color: var(--grau);
+  transition: transform 0.15s;
+}
+
+.klapp[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.klapp[open] {
+  padding-bottom: 14px;
+}
+
+.zahl {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--hell);
+  color: var(--haupt);
+}
+
+.leise {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--grau);
+}
+
+.warnung {
+  margin: 8px 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #fff4e5;
+  border: 1px solid #f5c98a;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 10px 0;
+}
+
+.chip {
+  font-size: 12.5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.chip span {
+  color: var(--grau);
+}
+
+.chip.an {
+  background: var(--hell);
+  border-color: var(--haupt);
+}
+
+.orte-liste,
+.routen {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+}
+
+.orte-liste li + li,
+.routen li + li {
+  border-top: 1px solid var(--linie);
+}
+
+.orte-liste button {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  padding: 7px 9px;
+}
+
+.orte-liste button:hover,
+.routen-knopf:hover:not(:disabled) {
+  background: var(--hell);
+}
+
+.ort-text,
+.routen-knopf {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ort-text span,
+.routen-knopf span {
+  font-size: 12.5px;
+  color: var(--grau);
+}
+
+.ort-text strong,
+.routen-knopf strong {
+  overflow-wrap: anywhere;
+}
+
+.routen-knopf {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  padding: 7px 9px;
+}
+
+.routen li.offen {
+  background: #eef3ff;
+}
+
+.routen li.offen .routen-knopf {
+  background: none;
+}
+
+.routen-aktion {
+  padding: 0 9px 9px;
+}
+
+.ort-marke {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+  background: var(--weiss);
+  border: 1.5px solid var(--haupt);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ort-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.ort-info span {
+  color: var(--grau);
+  font-size: 12.5px;
+}
+
+.wetter-wahl {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 8px;
+}
+
+.wetter-wahl span {
+  display: block;
+  font-size: 12px;
+  color: var(--grau);
+  margin-bottom: 3px;
+}
+
+.wetter-wahl input {
+  width: 100%;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  padding: 7px 8px;
+  background: var(--weiss);
+}
+
+.wetter-kopf {
+  margin: 12px 0 8px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.wetter-kurz {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--hell);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wetter-tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.wetter-tabelle th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--grau);
+  font-size: 11.5px;
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.wetter-tabelle td {
+  padding: 4px;
+  border-bottom: 1px solid var(--linie);
+  vertical-align: top;
+}
+
+.panne {
+  max-width: 420px;
+  margin: 15vh auto 0;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.panne h1 {
+  font-size: 22px;
+  color: var(--haupt);
+}
+
+
+/* ---------- Fröhliches Farbkleid ---------- */
+
+body {
+  background: linear-gradient(160deg, var(--pink-hell) 0%, var(--blau-hell) 45%, var(--gelb-hell) 75%, var(--gruen-hell) 100%);
+}
+
+.seite {
+  background: linear-gradient(175deg, #ffd3e8 0%, #d9f0ff 38%, #fff3b8 70%, #d8f7c9 100%);
+  border-right: 3px solid var(--pink);
+}
+
+.kopf h1 {
+  font-size: 24px;
+  color: var(--fuchsia);
+  letter-spacing: 0.2px;
+}
+
+.stufe {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--gelb);
+  color: var(--text);
+  font-weight: 600;
+}
+
+button {
+  border: 2px solid var(--pink);
+  border-radius: 999px;
+  font-weight: 600;
+  transition: background 0.12s, transform 0.12s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--pink-hell);
+  border-color: var(--fuchsia);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button.haupt {
+  background: var(--fuchsia);
+  border-color: var(--fuchsia);
+  color: #fff;
+}
+
+button.haupt:hover:not(:disabled) {
+  background: var(--fuchsia-dunkel);
+  border-color: var(--fuchsia-dunkel);
+}
+
+input[type='text'],
+input[type='search'],
+.wetter-wahl input {
+  border: 2px solid var(--pink);
+  border-radius: 12px;
+}
+
+input:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--fuchsia);
+  outline-offset: 2px;
+}
+
+.suche button {
+  background: var(--gelb);
+  border-color: var(--gelb);
+}
+
+.suche button:hover:not(:disabled) {
+  background: #ffc91a;
+  border-color: #ffc91a;
+}
+
+/* Kacheln: jede in ihrer eigenen Farbe */
+.karte-block,
+.liste-block,
+.klapp {
+  border: 0;
+  border-radius: 18px;
+  box-shadow: 0 3px 0 rgba(194, 24, 155, 0.18), 0 6px 16px rgba(194, 24, 155, 0.1);
+}
+
+.karte-block {
+  background: #fff;
+  border-top: 6px solid var(--fuchsia);
+}
+
+.klapp:nth-of-type(1) {
+  background: var(--blau-hell);
+  border-top: 6px solid var(--blau);
+}
+
+.klapp:nth-of-type(2) {
+  background: var(--gruen-hell);
+  border-top: 6px solid var(--gruen);
+}
+
+.klapp:nth-of-type(3) {
+  background: var(--gelb-hell);
+  border-top: 6px solid var(--gelb);
+}
+
+.liste-block {
+  background: var(--pink-hell);
+  border-top: 6px solid var(--pink);
+}
+
+.klapp > summary::after {
+  color: var(--fuchsia);
+  font-size: 18px;
+}
+
+/* Die sechs Zahlen als bunte Kacheln */
+.zahlen {
+  gap: 8px;
+}
+
+.zahlen div {
+  padding: 8px 10px;
+  border-radius: 14px;
+}
+
+.zahlen div:nth-child(1) { background: var(--pink-hell); }
+.zahlen div:nth-child(2) { background: var(--blau-hell); }
+.zahlen div:nth-child(3) { background: var(--gelb-hell); }
+.zahlen div:nth-child(4) { background: var(--gruen-hell); }
+.zahlen div:nth-child(5) { background: #f7dcf3; }
+.zahlen div:nth-child(6) { background: var(--blau-hell); }
+
+.zahlen dt {
+  color: var(--grau);
+  font-weight: 600;
+}
+
+.zahlen dd {
+  color: var(--fuchsia-dunkel);
+}
+
+.hinweis {
+  background: var(--gelb-hell);
+  border: 2px dashed var(--gelb);
+  border-radius: 12px;
+}
+
+.knoepfe button:nth-child(1) { background: var(--pink-hell); }
+.knoepfe button:nth-child(2) { background: var(--blau-hell); border-color: var(--blau); }
+.knoepfe button:nth-child(3) { background: var(--gelb-hell); border-color: var(--gelb); }
+.knoepfe button:nth-child(4) { background: var(--gruen-hell); border-color: var(--gruen); }
+
+.knoepfe button:hover:not(:disabled) {
+  filter: saturate(1.4) brightness(0.97);
+}
+
+.zahl {
+  background: var(--fuchsia);
+  color: #fff;
+}
+
+.chip {
+  border-color: var(--gruen);
+  background: #fff;
+}
+
+.chip.an {
+  background: var(--gruen);
+  border-color: #5fc23e;
+}
+
+.chip span {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.orte-liste,
+.routen {
+  background: #fff;
+  border: 2px solid var(--linie);
+  border-radius: 12px;
+}
+
+.orte-liste button,
+.routen-knopf,
+.orte button,
+.tour-knopf {
+  border-radius: 0;
+  font-weight: 400;
+}
+
+.orte-liste button:hover,
+.routen-knopf:hover:not(:disabled) {
+  background: var(--pink-hell);
+}
+
+.routen li.offen {
+  background: var(--blau-hell);
+}
+
+.touren li {
+  background: #fff;
+  border: 2px solid var(--linie);
+  border-radius: 14px;
+}
+
+.touren li.aktiv {
+  background: var(--gelb-hell);
+  border-color: var(--gelb);
+}
+
+.weg {
+  border-width: 1px;
+  font-weight: 400;
+}
+
+.wetter-kurz {
+  background: var(--blau);
+  color: var(--text);
+  border-radius: 12px;
+}
+
+.wetter-tabelle th,
+.wetter-tabelle td {
+  border-bottom-color: #b9e2fb;
+}
+
+.warnung {
+  background: var(--gelb);
+  border: 0;
+  border-radius: 12px;
+  color: var(--text);
+}
+
+/* Karte und Höhenprofil */
+.schalter {
+  border-radius: 999px;
+  border: 2px solid var(--pink);
+  padding: 3px;
+}
+
+.schalter button {
+  border: 0;
+}
+
+.schalter button.an {
+  background: var(--fuchsia);
+  color: #fff;
+}
+
+.meldung {
+  background: var(--fuchsia);
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.wp {
+  border-color: var(--fuchsia);
+  color: var(--fuchsia);
+}
+
+.wp-start {
+  background: #3fbf2e;
+  border-color: #fff;
+  color: #fff;
+}
+
+.wp-ziel {
+  background: var(--fuchsia);
+  border-color: #fff;
+  color: #fff;
+}
+
+.ort-marke {
+  border: 2px solid var(--fuchsia);
+  background: var(--gelb-hell);
+}
+
+.hover-punkt {
+  background: var(--fuchsia);
+}
+
+.profil {
+  background: linear-gradient(180deg, #fff 0%, var(--pink-hell) 100%);
+  border-top: 3px solid var(--pink);
+}
+
+.profil-gitter {
+  stroke: #f3bcd9;
+}
+
+.profil-flaeche {
+  fill: var(--pink);
+  opacity: 0.35;
+}
+
+.profil-linie {
+  stroke: var(--fuchsia);
+  stroke-width: 2.5;
+}
+
+.profil-zeiger {
+  stroke: var(--fuchsia-dunkel);
+}
+
+.profil-punkt {
+  fill: var(--gelb);
+  stroke: var(--fuchsia-dunkel);
+}
+
+.profil-info {
+  border: 2px solid var(--pink);
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.panne h1 {
+  color: var(--fuchsia);
+}
+
+/* ---------- Cloud-Status ---------- */
+
+.konto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+}
+
+.konto-spalte {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.konto-zeile {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.konto-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.konto-mail {
+  flex: 1;
+  min-width: 0;
+  color: var(--grau);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.konto button {
+  font-size: 12.5px;
+  padding: 4px 10px;
+}
+
+.konto-punkt {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.konto-punkt.grau { background: #b9a9ba; }
+.konto-punkt.gelb { background: var(--gelb); box-shadow: 0 0 0 2px #e0b400 inset; }
+.konto-punkt.gruen { background: #3fbf2e; }
+.konto-punkt.rot { background: #e0245e; }
+
+.konto-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.konto-form input {
+  border: 2px solid var(--pink);
+  border-radius: 12px;
+  padding: 7px 10px;
+  background: #fff;
+}
+
+/* ---------- Schwierige Abschnitte ---------- */
+
+.schwer {
+  margin: 0 0 12px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #fff3e0;
+  border: 2px solid #ffb74d;
+}
+
+.schwer h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.schwer ul {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.schwer li button {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  font-weight: 400;
+  border: 0;
+  border-radius: 10px;
+  padding: 6px 8px;
+  background: #fff;
+}
+
+.schwer-farbe {
+  flex: none;
+  width: 8px;
+  border-radius: 4px;
+  align-self: stretch;
+}
+
+.schwer-unklar {
+  background: repeating-linear-gradient(180deg, #6e4a70 0 4px, #fff 4px 8px);
+}
+
+.schwer-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.schwer-text span {
+  font-size: 12.5px;
+  color: var(--grau);
+  line-height: 1.35;
+}
+
+.schwer .leise {
+  margin: 0;
+  font-size: 12px;
+}
+
+.schwer-ok {
+  margin: 0 0 12px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: var(--gruen-hell);
+  font-size: 13px;
+}
+
+.schwer-leer {
+  margin-bottom: 12px;
+}

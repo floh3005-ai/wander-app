@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.*
+*.keystore
+*.jks
+android/
+
+# Persönliche Notizen bleiben auf dem PC
+CLAUDE.md
+TAGEBUCH.md
+.claude/
