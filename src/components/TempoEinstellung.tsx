@@ -38,8 +38,10 @@ export default function TempoEinstellung({ onGeaendert }: Props) {
   return (
     <div className="tempo">
       <p className="leise">
-        Damit rechnet die App die geplante Zeit aus – inklusive kurzem Stehenbleiben und Gucken. Nach einer
-        aufgezeichneten Wanderung steht trotzdem die reine Gehzeit da.
+        Damit rechnet die App die geplante Zeit aus – inklusive kurzem Stehenbleiben und Gucken. Die Tour wird
+        stückweise betrachtet: Auf flachen Stücken zählt die Strecke, an steilen Stücken zählen die Höhenmeter.
+        Sanftes Auf und Ab kostet also keine Extra-Zeit. Nach einer aufgezeichneten Wanderung steht trotzdem die
+        reine Gehzeit da.
       </p>
       {feld('In der Ebene', 'km pro Stunde', 'kmh', 0.1)}
       {feld('Bergauf', 'Höhenmeter pro Stunde', 'auf', 10)}

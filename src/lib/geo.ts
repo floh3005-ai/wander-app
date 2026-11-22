@@ -160,3 +160,53 @@ export function zusammensetzen(abschnitte: (Punkt[] | null)[]): Punkt[] {
   }
   return out
 }
+
+/** Länge der Wegstücke, die für die Zeitplanung einzeln betrachtet werden (Meter) */
+const STUECK = 250
+
+/**
+ * Geplante Zeit für einen Weg in Minuten – stückweise gerechnet.
+ * Der Weg wird in kurze Stücke zerlegt. Für jedes Stück zählt der langsamere
+ * der beiden Werte: die Zeit nach der Strecke oder die Zeit nach den Höhenmetern.
+ * So kosten nur wirklich steile Stücke extra Zeit; sanftes Auf und Ab fällt
+ * nicht ins Gewicht. Die Grenze ergibt sich aus dem Tempo selbst (bei 2,8 km/h
+ * und 200 Hm/h bergauf: ab etwa 7 % Steigung).
+ */
+export function zeitFuerWeg(punkte: Punkt[]): number {
+  if (punkte.length < 2) return 0
+  const strecke = kumuliert(punkte)
+
+  // Aufsummierte Höhenmeter je Punkt – gleiche Zählweise wie bei „Bergauf/Bergab"
+  const auf: number[] = new Array(punkte.length).fill(0)
+  const ab: number[] = new Array(punkte.length).fill(0)
+  let bezug: number | null = null
+  let sAuf = 0
+  let sAb = 0
+  for (let i = 0; i < punkte.length; i++) {
+    const h = punkte[i][2]
+    if (Number.isFinite(h)) {
+      if (bezug === null) bezug = h
+      else if (h - bezug >= 5) {
+        sAuf += h - bezug
+        bezug = h
+      } else if (h - bezug <= -5) {
+        sAb += bezug - h
+        bezug = h
+      }
+    }
+    auf[i] = sAuf
+    ab[i] = sAb
+  }
+
+  let stunden = 0
+  let von = 0
+  for (let i = 1; i < punkte.length; i++) {
+    const letzter = i === punkte.length - 1
+    if (strecke[i] - strecke[von] < STUECK && !letzter) continue
+    const eben = (strecke[i] - strecke[von]) / (tempo.kmh * 1000)
+    const steil = (auf[i] - auf[von]) / tempo.auf + (ab[i] - ab[von]) / tempo.ab
+    stunden += Math.max(eben, steil)
+    von = i
+  }
+  return stunden * 60
+}

@@ -23,7 +23,7 @@ import { luftlinie, route } from './lib/brouter'
 import {
   formatDauer,
   formatKm,
-  gehzeitMinuten,
+  zeitFuerWeg,
   hoehenmeter,
   kumuliert,
   naechsterIndex,
@@ -78,7 +78,7 @@ function kennzahlen(tour: Tour) {
   const a = tour.aufzeichnung
   // Aufgezeichnete Wanderung: die gemessenen Werte zeigen, nicht nachrechnen
   if (a) return { punkte, meter: a.meter, max: h.max, min: h.min, auf: a.auf, ab: a.ab, minuten: a.gehzeit / 60 }
-  return { punkte, meter, ...h, minuten: gehzeitMinuten(meter, h.auf, h.ab) }
+  return { punkte, meter, ...h, minuten: zeitFuerWeg(punkte) }
 }
 
 function rahmen(tour: Tour): [number, number, number, number] | null {

@@ -22,7 +22,7 @@ import {
 import {
   formatDauer,
   formatKm,
-  gehzeitMinuten,
+  zeitFuerWeg,
   hoehenmeter,
   kumuliert,
   zusammensetzen,
@@ -425,7 +425,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
                       <strong>{t.name || 'Ohne Namen'}</strong>
                       <span>
                         {formatKm(meter)} km · {Math.round(h.auf)} m bergauf ·{' '}
-                        {formatDauer(gehzeitMinuten(meter, h.auf, h.ab))}
+                        {formatDauer(zeitFuerWeg(p))}
                       </span>
                     </div>
                     <button type="button" className="haupt" onClick={() => starten(t)}>
@@ -481,9 +481,10 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
         ? { index: stand.index, daneben: stand.daneben }
         : stelleAufWeg(fuehrung, l.letzte.lon, l.letzte.lat, null)
     const i = stelle.index
-    const h = hoehenmeter(fuehrung.punkte.slice(i))
+    const restWeg = fuehrung.punkte.slice(i)
+    const h = hoehenmeter(restWeg)
     const meter = fuehrung.meter[fuehrung.meter.length - 1] - fuehrung.meter[i]
-    rest = { meter, minuten: gehzeitMinuten(meter, h.auf, h.ab), auf: h.auf, daneben: stelle.daneben }
+    rest = { meter, minuten: zeitFuerWeg(restWeg), auf: h.auf, daneben: stelle.daneben }
 
     const naechste = fuehrung.liste.find((a) => a.meter >= fuehrung.meter[i] - 8)
     if (stelle.daneben > ABSEITS) {
