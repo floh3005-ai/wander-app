@@ -1481,3 +1481,19 @@ summary:focus-visible {
     font-size: 19px;
   }
 }
+
+.uw-app-hinweis {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.uw-app-hinweis a {
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: 700;
+  color: var(--fuchsia);
+}

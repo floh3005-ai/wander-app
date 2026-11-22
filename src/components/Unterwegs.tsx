@@ -259,6 +259,15 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
           <span>Einfach loslaufen – ohne geplante Tour</span>
         </button>
 
+        {!istApp && (
+          <p className="uw-app-hinweis">
+            Im Browser läuft die Aufzeichnung nur, solange der Bildschirm an ist.{' '}
+            <a href="https://github.com/floh3005-ai/wander-app/releases/download/aktuell/wander-app.apk">
+              Handy-App für Android herunterladen
+            </a>
+          </p>
+        )}
+
         <section className="uw-block">
           <h2>Geplante Touren</h2>
           {geplant.length === 0 ? (
