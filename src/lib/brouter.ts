@@ -12,7 +12,9 @@ export function route(a: Wegpunkt, b: Wegpunkt, signal?: AbortSignal): Promise<P
 /** Weg über mehrere Punkte in der angegebenen Reihenfolge. */
 export async function routeUeber(punkte: Wegpunkt[], signal?: AbortSignal): Promise<Punkt[]> {
   const lonlats = punkte.map((p) => `${p.lon.toFixed(6)},${p.lat.toFixed(6)}`).join("|")
-  const url = `${BROUTER}?lonlats=${lonlats}&profile=${PROFIL}&alternativeidx=0&format=geojson&timode=2`
+  // SAC_scale_limit=6: Ohne diese Angabe sperrt das Profil alle Wege ab T4 (Alpinwandern), dann
+  // fehlen Steige wie über die Brettgabel. Leichte Wege bleiben bevorzugt, die App zeigt die Schwierigkeit.
+  const url = `${BROUTER}?lonlats=${lonlats}&profile=${PROFIL}&alternativeidx=0&format=geojson&timode=2&profile:SAC_scale_limit=6`
   const antwort = await fetch(url, { signal })
   if (!antwort.ok) {
     const text = (await antwort.text()).trim()
