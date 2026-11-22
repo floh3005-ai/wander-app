@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import GipfelFinder from './GipfelFinder'
 import Karte, { type Flug } from './Karte'
 import WetterUnterwegs from './WetterUnterwegs'
+import { fuehrungAus, hinweis as abbiegeText, meterText, stelleAufWeg } from '../lib/abbiegen'
 import { loescheBild, merkeBild, nimmFoto } from '../lib/fotos'
+import { entferneHinweis, vibriere, zeigeHinweis } from '../lib/signal'
 import {
   alsTour,
   formatUhr,
@@ -16,17 +18,15 @@ import {
   type Lauf,
 } from '../lib/aufzeichnung'
 import {
-  entfernung,
   formatDauer,
   formatKm,
   gehzeitMinuten,
   hoehenmeter,
   kumuliert,
-  naechsterIndex,
   zusammensetzen,
 } from '../lib/geo'
 import { istApp, starteOrtung, type Ortung } from '../lib/standort'
-import type { Punkt, Tour } from '../lib/typen'
+import type { Tour } from '../lib/typen'
 
 interface Props {
   touren: Tour[]
@@ -34,6 +34,21 @@ interface Props {
   konto: ReactNode
   onSpeichern: (tour: Tour) => void
   onZumPlaner: () => void
+}
+
+/** Ab so vielen Metern neben dem Weg gilt die Route als verlassen */
+const ABSEITS = 60
+
+function neuerWegStand() {
+  return {
+    index: null as number | null,
+    daneben: 0,
+    abseits: false,
+    abseitsZeit: 0,
+    /** Abbiegestellen, für die schon vibriert wurde (Ankündigung / jetzt) */
+    angesagt: new Set<number>(),
+    jetzt: new Set<number>(),
+  }
 }
 
 interface Rest {
@@ -72,8 +87,11 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     .sort((a, b) => (a.aufzeichnung!.beginn < b.aufzeichnung!.beginn ? 1 : -1))
 
   const tour = lauf.current?.tourId ? touren.find((t) => t.id === lauf.current!.tourId) : undefined
-  const route = useMemo(() => (tour ? zusammensetzen(tour.abschnitte) : []), [tour])
-  const routeMeter = useMemo(() => kumuliert(route), [route])
+  // Weg der geplanten Tour samt Abbiegestellen
+  const fuehrung = useMemo(() => (tour ? fuehrungAus(tour.abschnitte) : null), [tour])
+  const fuehrungJetzt = useRef(fuehrung)
+  fuehrungJetzt.current = fuehrung
+  const wegStand = useRef(neuerWegStand())
 
   // ---------- Ortung ----------
 
@@ -81,6 +99,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     const l = lauf.current
     if (!l) return
     const neu = verarbeite(l, o)
+    fuehre(l, o)
     eichen(l, o)
     const jetzt = Date.now()
     if (neu && jetzt - zuletztGemerkt.current > 15_000) {
@@ -88,6 +107,52 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
       zuletztGemerkt.current = jetzt
     }
     neuZeichnen()
+  }
+
+  /**
+   * Geplanter Tour folgen: merken, wo auf dem Weg man ist, und rechtzeitig vor
+   * einer Abbiegung vibrieren – auch wenn das Handy in der Tasche steckt.
+   */
+  function fuehre(l: Lauf, o: Ortung) {
+    const f = fuehrungJetzt.current
+    if (!f || f.punkte.length < 2 || l.pausiert || o.genau > 35) return
+    const s = wegStand.current
+    const stelle = stelleAufWeg(f, o.lon, o.lat, s.index)
+    s.index = stelle.index
+    s.daneben = stelle.daneben
+    const jetzt = Date.now()
+
+    if (stelle.daneben > ABSEITS) {
+      if (!s.abseits || jetzt - s.abseitsZeit > 90_000) {
+        vibriere(1400)
+        zeigeHinweis('Route verlassen', `Du bist etwa ${meterText(stelle.daneben)} neben der geplanten Route.`)
+        s.abseitsZeit = jetzt
+      }
+      s.abseits = true
+      return
+    }
+    if (s.abseits) {
+      s.abseits = false
+      vibriere(200)
+      zeigeHinweis('Wieder auf der Route', 'Weiter geht es wie geplant.')
+    }
+
+    const naechste = f.liste.find((a) => a.meter >= f.meter[stelle.index] - 8)
+    if (!naechste) return
+    const bis = naechste.meter - f.meter[stelle.index]
+    const h = abbiegeText(naechste.winkel)
+    if (bis <= 25) {
+      if (!s.jetzt.has(naechste.index)) {
+        s.jetzt.add(naechste.index)
+        s.angesagt.add(naechste.index)
+        vibriere(900)
+        zeigeHinweis(`${h.pfeil} Jetzt ${h.text}`, 'Wander-App')
+      }
+    } else if (bis <= 90 && !s.angesagt.has(naechste.index)) {
+      s.angesagt.add(naechste.index)
+      vibriere(400)
+      zeigeHinweis(`${h.pfeil} In ${meterText(bis)} ${h.text}`, 'Wander-App')
+    }
   }
 
   /**
@@ -173,6 +238,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
 
   function starten(t?: Tour) {
     lauf.current = neuerLauf(t?.id)
+    wegStand.current = neuerWegStand()
     eichung.current = { laeuft: false, versuch: 0 }
     merkeLauf(lauf.current)
     setFertig(false)
@@ -208,6 +274,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     const l = lauf.current
     if (!l) return
     ortungAus()
+    entferneHinweis()
     merkeLauf(l)
     if (l.punkte.length < 2) {
       lauf.current = null
@@ -370,16 +437,29 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
   const position = l.letzte ? { lon: l.letzte.lon, lat: l.letzte.lat } : null
 
   let rest: Rest | null = null
-  if (tour && route.length > 1 && l.letzte) {
-    const i = naechsterIndex(route, l.letzte.lon, l.letzte.lat)
-    const teil: Punkt[] = route.slice(i)
-    const h = hoehenmeter(teil)
-    const meter = routeMeter[routeMeter.length - 1] - routeMeter[i]
-    rest = {
-      meter,
-      minuten: gehzeitMinuten(meter, h.auf, h.ab),
-      auf: h.auf,
-      daneben: entfernung(route[i][0], route[i][1], l.letzte.lon, l.letzte.lat),
+  let abbiegen: { pfeil: string; oben: string; unten: string } | null = null
+  if (fuehrung && fuehrung.punkte.length > 1 && l.letzte) {
+    const stand = wegStand.current
+    const stelle =
+      stand.index !== null
+        ? { index: stand.index, daneben: stand.daneben }
+        : stelleAufWeg(fuehrung, l.letzte.lon, l.letzte.lat, null)
+    const i = stelle.index
+    const h = hoehenmeter(fuehrung.punkte.slice(i))
+    const meter = fuehrung.meter[fuehrung.meter.length - 1] - fuehrung.meter[i]
+    rest = { meter, minuten: gehzeitMinuten(meter, h.auf, h.ab), auf: h.auf, daneben: stelle.daneben }
+
+    const naechste = fuehrung.liste.find((a) => a.meter >= fuehrung.meter[i] - 8)
+    if (stelle.daneben > ABSEITS) {
+      abbiegen = { pfeil: '⚠️', oben: 'Route verlassen', unten: `etwa ${meterText(stelle.daneben)} daneben` }
+    } else if (!naechste) {
+      abbiegen = { pfeil: '🏁', oben: `Noch ${meterText(meter)}`, unten: 'dem Weg bis zum Ziel folgen' }
+    } else {
+      const bis = naechste.meter - fuehrung.meter[i]
+      const hw = abbiegeText(naechste.winkel)
+      if (bis <= 25) abbiegen = { pfeil: hw.pfeil, oben: 'Jetzt', unten: hw.text }
+      else if (bis <= 400) abbiegen = { pfeil: hw.pfeil, oben: `In ${meterText(bis)}`, unten: hw.text }
+      else abbiegen = { pfeil: '↑', oben: meterText(bis), unten: 'dem Weg folgen' }
     }
   }
 
@@ -417,7 +497,23 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
           onVerschoben={() => {}}
           onEntfernen={() => {}}
         />
-        <div className={`uw-zustand ${bewegt && !l.pausiert && !fertig ? 'an' : ''}`}>{zustand}</div>
+        {abbiegen && !fertig && (
+          <div className={abbiegen.pfeil === '⚠️' ? 'uw-abbiegen uw-abseits' : 'uw-abbiegen'} role="status">
+            <span className="uw-pfeil" aria-hidden="true">
+              {abbiegen.pfeil}
+            </span>
+            <span className="uw-abbiegen-text">
+              <strong>{abbiegen.oben}</strong>
+              <span>
+                {abbiegen.unten}
+                {fuehrung && !fuehrung.genau && abbiegen.pfeil !== '⚠️' ? ' (geschätzt)' : ''}
+              </span>
+            </span>
+          </div>
+        )}
+        <div className={`uw-zustand ${abbiegen && !fertig ? 'uw-zustand-unten' : ''} ${bewegt && !l.pausiert && !fertig ? 'an' : ''}`}>
+          {zustand}
+        </div>
         {!folgen && position && (
           <button type="button" className="uw-zentrieren haupt" onClick={() => setFolgen(true)}>
             Zu mir
@@ -427,11 +523,6 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
 
       <div className="uw-unten">
         {fehler && <p className="warnung">{fehler}</p>}
-        {rest && rest.daneben > 80 && !fertig && (
-          <p className="warnung">
-            Du bist etwa {Math.round(rest.daneben / 10) * 10} m neben der geplanten Route.
-          </p>
-        )}
 
         <dl className="uw-zahlen">
           <div>

@@ -2036,3 +2036,62 @@ summary:focus-visible {
 .ar-kopf button {
   color: var(--text);
 }
+
+/* ---------- Abbiegehinweis unterwegs ---------- */
+
+.uw-abbiegen {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: var(--fuchsia);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.uw-abseits {
+  background: #d8001d;
+}
+
+.uw-pfeil {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--fuchsia-dunkel);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.uw-abbiegen-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.uw-abbiegen-text strong {
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.uw-abbiegen-text span {
+  font-size: 15px;
+}
+
+.uw-zustand-unten {
+  top: 88px;
+}
+
+/* Unterwegs: Zoom-Knöpfe der Karte unter den Abbiege-Balken rücken */
+.uw-karte .maplibregl-ctrl-top-right {
+  top: 84px;
+}

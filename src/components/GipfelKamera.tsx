@@ -297,8 +297,11 @@ export default function GipfelKamera({ ort, hoehe, gipfel, gelaende, onListe, on
             {richtungText(gewaehlt.richtung)}
           </p>
         )}
-        {false && (
-          <p className="ar-info">Prüfe, welche Gipfel von hier wirklich zu sehen sind …</p>
+        {!gewaehlt && (
+          <p className="ar-info">
+            Die Schilder zeigen, in welcher Richtung ein Gipfel liegt – auch durch Wände und Bäume hindurch.
+            Draußen mit freier Sicht sitzen sie auf den Bergen. Schild antippen für die Entfernung.
+          </p>
         )}
         {!gelaende && (
           <p className="ar-info">Ohne Netz kann ich verdeckte Gipfel nicht ausblenden – es werden alle gezeigt.</p>

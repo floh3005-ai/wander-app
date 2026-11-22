@@ -125,6 +125,8 @@ export function umgedreht(abschnitt: Punkt[]): Punkt[] {
   return abschnitt.map((_, i) => {
     const p = abschnitt[n - 1 - i]
     const code = i === 0 ? undefined : abschnitt[n - i][3]
+    // Abbiegung bleibt an derselben Stelle, wechselt aber die Seite (rechts ↔ links)
+    if (p[4] !== undefined) return [p[0], p[1], p[2], code ?? 0, p[4] === 0 ? 0 : -p[4]]
     return code === undefined ? [p[0], p[1], p[2]] : [p[0], p[1], p[2], code]
   })
 }

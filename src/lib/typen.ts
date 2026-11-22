@@ -1,9 +1,10 @@
 /**
  * Ein Punkt auf dem Weg: [Länge, Breite, Höhe in Metern, Schwierigkeit].
  * Höhe kann NaN sein, wenn unbekannt. Die Schwierigkeit (siehe schwierigkeit.ts) ist
- * freiwillig und gilt für das Wegstück, das an diesem Punkt endet.
+ * freiwillig und gilt für das Wegstück, das an diesem Punkt endet. Die fünfte Zahl ist
+ * der Abbiegewinkel an dieser Stelle (siehe abbiegen.ts).
  */
-export type Punkt = [number, number, number, number?]
+export type Punkt = [number, number, number, number?, number?]
 
 /** Ein von Hand gesetzter Wegpunkt. */
 export interface Wegpunkt {

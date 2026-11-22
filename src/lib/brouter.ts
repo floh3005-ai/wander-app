@@ -12,7 +12,7 @@ export function route(a: Wegpunkt, b: Wegpunkt, signal?: AbortSignal): Promise<P
 /** Weg über mehrere Punkte in der angegebenen Reihenfolge. */
 export async function routeUeber(punkte: Wegpunkt[], signal?: AbortSignal): Promise<Punkt[]> {
   const lonlats = punkte.map((p) => `${p.lon.toFixed(6)},${p.lat.toFixed(6)}`).join("|")
-  const url = `${BROUTER}?lonlats=${lonlats}&profile=${PROFIL}&alternativeidx=0&format=geojson`
+  const url = `${BROUTER}?lonlats=${lonlats}&profile=${PROFIL}&alternativeidx=0&format=geojson&timode=2`
   const antwort = await fetch(url, { signal })
   if (!antwort.ok) {
     const text = (await antwort.text()).trim()
@@ -23,7 +23,15 @@ export async function routeUeber(punkte: Wegpunkt[], signal?: AbortSignal): Prom
   if (!koordinaten || koordinaten.length < 2) {
     throw new Error('Kein Weg gefunden')
   }
-  const weg = koordinaten.map((k) => [k[0], k[1], k.length > 2 ? k[2] : NaN, 0] as Punkt)
+  const weg = koordinaten.map((k) => [k[0], k[1], k.length > 2 ? k[2] : NaN, 0, 0] as Punkt)
+
+  // Abbiegestellen: [Stelle im Weg, Art, Ausfahrt, Meter bis zur nächsten, Winkel]
+  const abbiegen: number[][] | undefined = daten?.features?.[0]?.properties?.voicehints
+  for (const a of abbiegen ?? []) {
+    const stelle = weg[a[0]]
+    const winkel = a[4]
+    if (stelle && typeof winkel === 'number' && Math.abs(winkel) >= 20) stelle[4] = winkel
+  }
 
   // Der Dienst liefert zu jedem Wegstück die Eigenschaften des Wegs mit –
   // daraus wird die Schwierigkeit (SAC-Skala) je Punkt abgelesen.
