@@ -7,6 +7,7 @@ import Geschwindigkeit from './components/Geschwindigkeit'
 import Schwierigkeit from './components/Schwierigkeit'
 import Statistik from './components/Statistik'
 import TempoEinstellung from './components/TempoEinstellung'
+import TourTempo from './components/TourTempo'
 import { ladeFotosHoch, loescheBild, merkeBild, waehleDateien } from './lib/fotos'
 import Unterwegs from './components/Unterwegs'
 import { ladeLauf } from './lib/aufzeichnung'
@@ -81,7 +82,7 @@ function kennzahlen(tour: Tour) {
   const a = tour.aufzeichnung
   // Aufgezeichnete Wanderung: die gemessenen Werte zeigen, nicht nachrechnen
   if (a) return { punkte, meter: a.meter, max: h.max, min: h.min, auf: a.auf, ab: a.ab, minuten: a.gehzeit / 60 }
-  return { punkte, meter, ...h, minuten: zeitFuerWeg(punkte) }
+  return { punkte, meter, ...h, minuten: zeitFuerWeg(punkte, tour.tempo) }
 }
 
 function rahmen(tour: Tour): [number, number, number, number] | null {
@@ -679,7 +680,7 @@ export default function App() {
               <dd>{formatKm(zahlen.meter)} km</dd>
             </div>
             <div>
-              <dt>{aktiv.aufzeichnung ? 'Reine Gehzeit' : 'Geplante Zeit'}</dt>
+              <dt>{aktiv.aufzeichnung ? 'Reine Gehzeit' : aktiv.tempo ? 'Geplante Zeit · eigenes Tempo' : 'Geplante Zeit'}</dt>
               <dd>{hatWeg ? formatDauer(zahlen.minuten) : '–'}</dd>
             </div>
             <div>
@@ -800,6 +801,17 @@ export default function App() {
         <details className="klapp">
           <summary>Mein Tempo</summary>
           <TempoEinstellung onGeaendert={() => setTempoStand((n) => n + 1)} />
+          {!aktiv.aufzeichnung && (
+            <TourTempo
+              tempo={aktiv.tempo}
+              onAendern={(tempo) =>
+                aendere((t) => {
+                  const { tempo: _alt, ...rest } = t
+                  return tempo ? { ...rest, tempo } : rest
+                })
+              }
+            />
+          )}
         </details>
 
         <details className="klapp">

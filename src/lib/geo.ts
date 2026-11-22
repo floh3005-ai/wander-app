@@ -172,7 +172,8 @@ const STUECK = 250
  * nicht ins Gewicht. Die Grenze ergibt sich aus dem Tempo selbst (bei 2,8 km/h
  * und 200 Hm/h bergauf: ab etwa 7 % Steigung).
  */
-export function zeitFuerWeg(punkte: Punkt[]): number {
+export function zeitFuerWeg(punkte: Punkt[], eigenes?: Tempo): number {
+  const t = eigenes && eigenes.kmh > 0 && eigenes.auf > 0 && eigenes.ab > 0 ? eigenes : tempo
   if (punkte.length < 2) return 0
   const strecke = kumuliert(punkte)
 
@@ -203,8 +204,8 @@ export function zeitFuerWeg(punkte: Punkt[]): number {
   for (let i = 1; i < punkte.length; i++) {
     const letzter = i === punkte.length - 1
     if (strecke[i] - strecke[von] < STUECK && !letzter) continue
-    const eben = (strecke[i] - strecke[von]) / (tempo.kmh * 1000)
-    const steil = (auf[i] - auf[von]) / tempo.auf + (ab[i] - ab[von]) / tempo.ab
+    const eben = (strecke[i] - strecke[von]) / (t.kmh * 1000)
+    const steil = (auf[i] - auf[von]) / t.auf + (ab[i] - ab[von]) / t.ab
     stunden += Math.max(eben, steil)
     von = i
   }

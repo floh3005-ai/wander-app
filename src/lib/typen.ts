@@ -28,6 +28,8 @@ export interface Tour {
   orteFuer?: string
   /** Geplanter Tag und Startzeit, z. B. 2026-11-23 und 09:00 */
   start?: { datum: string; zeit: string }
+  /** Ausnahme: eigenes Tempo nur für diese Tour (sonst gilt „Mein Tempo") */
+  tempo?: { kmh: number; auf: number; ab: number }
   /** Fotos zur Tour (die Bilder selbst liegen getrennt, siehe fotos.ts) */
   fotos?: FotoInfo[]
   /**
