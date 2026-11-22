@@ -151,6 +151,7 @@ export function alsTour(lauf: Lauf, name: string, ende = Date.now()): Tour {
       auf: Math.round(lauf.auf),
       ab: Math.round(lauf.ab),
       geplant: lauf.tourId,
+      zeiten: lauf.zeiten.map((z) => Math.max(0, Math.round((z - lauf.beginn) / 1000))),
     },
   }
 }

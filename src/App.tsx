@@ -3,6 +3,7 @@ import Karte, { type Flug } from './components/Karte'
 import Hoehenprofil from './components/Hoehenprofil'
 import AmWeg from './components/AmWeg'
 import Fotos, { FotoGross } from './components/Fotos'
+import Geschwindigkeit from './components/Geschwindigkeit'
 import Schwierigkeit from './components/Schwierigkeit'
 import Statistik from './components/Statistik'
 import TempoEinstellung from './components/TempoEinstellung'
@@ -859,6 +860,7 @@ export default function App() {
           )}
         </div>
         <Hoehenprofil punkte={zahlen.punkte} onHover={setHover} />
+        {aktiv.aufzeichnung && <Geschwindigkeit tour={aktiv} onHover={setHover} />}
       </main>
       {fotoOffen && (
         <FotoGross

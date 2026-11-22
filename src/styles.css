@@ -2352,3 +2352,82 @@ summary:focus-visible {
   font-weight: 400;
   padding: 5px 10px;
 }
+
+/* ---------- Geschwindigkeitsprofil ---------- */
+
+.tempo-profil {
+  position: relative;
+  flex: none;
+  background: #fff;
+  border-top: 3px solid var(--blau);
+  overflow: hidden;
+}
+
+.tempo-profil svg {
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.tempo-profil-leer {
+  padding: 14px 16px;
+  color: var(--grau);
+  font-size: 13.5px;
+  text-align: center;
+}
+
+.tempo-profil-kopf {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 8px 14px 0;
+  font-size: 14px;
+}
+
+.tempo-profil-kopf span {
+  font-size: 12px;
+  color: var(--grau);
+}
+
+.tempo-flaeche {
+  fill: var(--gruen);
+  opacity: 0.55;
+}
+
+.tempo-hoehe {
+  fill: none;
+  stroke: var(--fuchsia);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.tempo-auswahl {
+  fill: var(--gelb);
+  opacity: 0.45;
+}
+
+.tempo-profil .profil-info {
+  top: 34px;
+}
+
+.tempo-zahlen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 26px;
+  margin: 0;
+  padding: 4px 14px 12px;
+}
+
+.tempo-zahlen dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fuchsia-dunkel);
+  font-variant-numeric: tabular-nums;
+}
+
+.tempo-zahlen dt {
+  font-size: 12px;
+  color: var(--grau);
+}

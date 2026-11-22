@@ -42,6 +42,8 @@ export interface Tour {
     ab: number
     /** ID der geplanten Tour, der gefolgt wurde */
     geplant?: string
+    /** Zeitpunkt je aufgezeichnetem Punkt, in Sekunden ab Beginn (für das Geschwindigkeitsprofil) */
+    zeiten?: number[]
   }
 }
 
