@@ -5,7 +5,6 @@ import WetterUnterwegs from './WetterUnterwegs'
 import { fuehrungAus, hinweis as abbiegeText, meterText, stelleAufWeg } from '../lib/abbiegen'
 import Statistik from './Statistik'
 import { route } from '../lib/brouter'
-import { ladeKartenFuerTour, ladeOfflineStaende } from '../lib/offline'
 import { loescheBild, merkeBild, nimmFoto } from '../lib/fotos'
 import { entferneHinweis, vibriere, zeigeHinweis } from '../lib/signal'
 import {
@@ -29,7 +28,7 @@ import {
   zusammensetzen,
 } from '../lib/geo'
 import { istApp, starteOrtung, type Ortung } from '../lib/standort'
-import { wegKennung, type Punkt, type Tour } from '../lib/typen'
+import type { Punkt, Tour } from '../lib/typen'
 
 interface Props {
   touren: Tour[]
@@ -83,9 +82,6 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
   const [umweg, setUmweg] = useState<{ name: string; abschnitt: Punkt[] } | null>(null)
   const [zielFrage, setZielFrage] = useState<{ name: string; lon: number; lat: number } | null>(null)
   const [zielLaedt, setZielLaedt] = useState(false)
-  /** Für welche Touren die Karte auf dem Gerät liegt */
-  const [offline, setOffline] = useState(ladeOfflineStaende)
-  const [kartenLauf, setKartenLauf] = useState<{ id: string; fertig: number; gesamt: number } | null>(null)
   const [flug, setFlug] = useState<Flug | null>(null)
   const flugNr = useRef(0)
 
@@ -300,22 +296,6 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
     ortungAn()
   }
 
-  /** Kartenstreifen einer Tour aufs Handy laden, damit sie ohne Netz zu sehen ist. */
-  async function karteLaden(t: Tour) {
-    if (kartenLauf) return
-    setHinweis(null)
-    setKartenLauf({ id: t.id, fertig: 0, gesamt: 0 })
-    try {
-      await ladeKartenFuerTour(t.id, wegKennung(t), zusammensetzen(t.abschnitte), (fertig, gesamt) =>
-        setKartenLauf({ id: t.id, fertig, gesamt }),
-      )
-      setOffline(ladeOfflineStaende())
-    } catch (e) {
-      setHinweis(e instanceof Error ? e.message : 'Die Karte konnte nicht geladen werden.')
-    }
-    setKartenLauf(null)
-  }
-
   function pause() {
     const l = lauf.current
     if (!l) return
@@ -448,25 +428,9 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
                         {formatDauer(gehzeitMinuten(meter, h.auf, h.ab))}
                       </span>
                     </div>
-                    <span className="uw-tour-knoepfe">
-                      <button type="button" className="haupt" onClick={() => starten(t)}>
-                        Starten
-                      </button>
-                      <button
-                        type="button"
-                        className="uw-karte-knopf"
-                        disabled={kartenLauf !== null}
-                        onClick={() => karteLaden(t)}
-                      >
-                        {kartenLauf?.id === t.id
-                          ? kartenLauf.gesamt > 0
-                            ? `${Math.round((kartenLauf.fertig / kartenLauf.gesamt) * 100)} %`
-                            : '…'
-                          : offline[t.id]?.kennung === wegKennung(t)
-                            ? '✓ Karte da'
-                            : '⬇ Karte'}
-                      </button>
-                    </span>
+                    <button type="button" className="haupt" onClick={() => starten(t)}>
+                      Starten
+                    </button>
                   </li>
                 )
               })}

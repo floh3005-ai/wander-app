@@ -12,7 +12,7 @@ export const PROTOKOLL = 'wandertopo'
 const ZOOMS = [12, 13, 14, 15]
 const RAND = 350 // Meter links und rechts vom Weg
 const MAX_KACHELN = 600
-const MAX_NEBENBEI = 4000
+const MAX_NEBENBEI = 1500
 
 function adresse(z: number, x: number, y: number): string {
   // Immer derselbe Server je Kachel, damit sie im Speicher wiedergefunden wird
