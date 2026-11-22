@@ -64,14 +64,56 @@ export function hoehenmeter(punkte: Punkt[], schwelle = 5): Hoehen {
   return { auf, ab, max, min }
 }
 
+/** Persönliches Tempo für die Zeitplanung – gemütlich, mit Stehenbleiben und Gucken. */
+export interface Tempo {
+  /** Kilometer pro Stunde in der Ebene */
+  kmh: number
+  /** Höhenmeter pro Stunde bergauf */
+  auf: number
+  /** Höhenmeter pro Stunde bergab */
+  ab: number
+}
+
+/** Anne-Katrins Tempo (22.11.2026): 2,5 km/h und 200 Hm/h, mit Hund und kurzen Stopps. */
+export const MEIN_TEMPO: Tempo = { kmh: 2.5, auf: 200, ab: 350 }
+/** Übliche Wanderer-Norm (DIN 33466), reine Gehzeit ohne Pausen */
+export const NORM_TEMPO: Tempo = { kmh: 4, auf: 300, ab: 500 }
+
+const TEMPO_MERK = 'wander.tempo.v1'
+
+function ladeTempo(): Tempo {
+  try {
+    const t = JSON.parse(localStorage.getItem(TEMPO_MERK) ?? 'null')
+    if (t && t.kmh > 0 && t.auf > 0 && t.ab > 0) return t
+  } catch {
+    // Standard nehmen
+  }
+  return MEIN_TEMPO
+}
+
+let tempo: Tempo = ladeTempo()
+
+export function aktuellesTempo(): Tempo {
+  return tempo
+}
+
+export function setzeTempo(neu: Tempo): void {
+  tempo = neu
+  try {
+    localStorage.setItem(TEMPO_MERK, JSON.stringify(neu))
+  } catch {
+    // gilt dann nur bis zum Schließen
+  }
+}
+
 /**
- * Gehzeit in Minuten nach DIN 33466:
- * 4 km/h in der Ebene, 300 Hm/h bergauf, 500 Hm/h bergab;
- * der größere Wert zählt ganz, der kleinere zur Hälfte.
+ * Geplante Zeit in Minuten. Rechenweg wie in der Wanderer-Norm (DIN 33466), aber
+ * mit dem persönlichen Tempo: Strecke und Höhenmeter werden getrennt in Stunden
+ * umgerechnet; der größere Wert zählt ganz, der kleinere zur Hälfte.
  */
 export function gehzeitMinuten(meter: number, auf: number, ab: number): number {
-  const horizontal = meter / 4000
-  const vertikal = auf / 300 + ab / 500
+  const horizontal = meter / (tempo.kmh * 1000)
+  const vertikal = auf / tempo.auf + ab / tempo.ab
   const stunden = Math.max(horizontal, vertikal) + Math.min(horizontal, vertikal) / 2
   return stunden * 60
 }

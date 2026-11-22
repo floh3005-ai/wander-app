@@ -157,7 +157,7 @@ export default function Wetter({ punkte, minuten, start, onStart }: Props) {
       <p className="wetter-kopf">
         <strong>{tagText(datum)}</strong>, {zeit} bis ca. {uhr(ende)} Uhr
         <br />
-        <span className="leise">reine Gehzeit {formatDauer(minuten)}, ohne Pausen</span>
+        <span className="leise">geplante Zeit {formatDauer(minuten)} bei Deinem Tempo</span>
       </p>
 
       {laedt && !daten && <p className="leise">Wetter wird geladen …</p>}

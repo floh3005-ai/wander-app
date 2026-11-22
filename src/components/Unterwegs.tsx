@@ -639,7 +639,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
         </dl>
         {rest && !fertig && (
           <p className="uw-rest">
-            Noch ca. {formatDauer(rest.minuten)} Gehzeit und {Math.round(rest.auf)} m bergauf bis zum Ziel
+            Noch ca. {formatDauer(rest.minuten)} bei Deinem Tempo und {Math.round(rest.auf)} m bergauf bis zum Ziel
           </p>
         )}
         {l.letzte && !fertig && (

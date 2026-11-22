@@ -5,6 +5,7 @@ import AmWeg from './components/AmWeg'
 import Fotos, { FotoGross } from './components/Fotos'
 import Schwierigkeit from './components/Schwierigkeit'
 import Statistik from './components/Statistik'
+import TempoEinstellung from './components/TempoEinstellung'
 import { ladeFotosHoch, loescheBild, merkeBild, waehleDateien } from './lib/fotos'
 import Unterwegs from './components/Unterwegs'
 import { ladeLauf } from './lib/aufzeichnung'
@@ -134,7 +135,10 @@ export default function App() {
   const dateiFeld = useRef<HTMLInputElement>(null)
 
   const aktiv = touren.find((t) => t.id === aktivId) ?? touren[0]
-  const zahlen = useMemo(() => kennzahlen(aktiv), [aktiv])
+  // zählt hoch, wenn das Tempo geändert wurde – dann werden alle Zeiten neu gerechnet
+  const [tempoStand, setTempoStand] = useState(0)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const zahlen = useMemo(() => kennzahlen(aktiv), [aktiv, tempoStand])
   const rechnet = aktiv.abschnitte.some((a) => a === null)
 
   // automatisch speichern
@@ -633,7 +637,7 @@ export default function App() {
               <dd>{formatKm(zahlen.meter)} km</dd>
             </div>
             <div>
-              <dt>Gehzeit</dt>
+              <dt>{aktiv.aufzeichnung ? 'Reine Gehzeit' : 'Geplante Zeit'}</dt>
               <dd>{hatWeg ? formatDauer(zahlen.minuten) : '–'}</dd>
             </div>
             <div>
@@ -747,6 +751,11 @@ export default function App() {
             onVorschau={routeVorschau}
             onUebernehmen={routeUebernehmen}
           />
+        </details>
+
+        <details className="klapp">
+          <summary>Mein Tempo</summary>
+          <TempoEinstellung onGeaendert={() => setTempoStand((n) => n + 1)} />
         </details>
 
         <details className="klapp">

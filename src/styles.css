@@ -2294,3 +2294,61 @@ summary:focus-visible {
   object-fit: cover;
   border-radius: 9px;
 }
+
+/* ---------- Mein Tempo ---------- */
+
+.klapp:nth-of-type(5) {
+  background: var(--pink-hell);
+  border-top: 6px solid var(--pink);
+}
+
+.klapp:nth-of-type(6) {
+  background: var(--gruen-hell);
+  border-top: 6px solid var(--gruen);
+}
+
+.tempo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tempo-feld {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.tempo-eingabe {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--grau);
+}
+
+.tempo-eingabe input {
+  width: 74px;
+  padding: 6px 8px;
+  border: 2px solid var(--pink);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+.tempo-knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tempo-knoepfe button {
+  font-size: 12.5px;
+  font-weight: 400;
+  padding: 5px 10px;
+}
