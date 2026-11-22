@@ -4,9 +4,11 @@ dist/
 .env.*
 *.keystore
 *.jks
-android/
 
 # Persönliche Notizen bleiben auf dem PC
 CLAUDE.md
 TAGEBUCH.md
 .claude/
+
+# Signatur-Schlüssel der Handy-App – niemals hochladen
+geheim/

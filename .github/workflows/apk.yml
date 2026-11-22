@@ -1,0 +1,73 @@
+name: Handy-App bauen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ist der Signatur-Schlüssel hinterlegt?
+        id: pruefen
+        env:
+          KEYSTORE_B64: ${{ secrets.WANDER_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "bereit=ja" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Signatur-Schlüssel fehlt noch – die Handy-App wird nicht gebaut."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.pruefen.outputs.bereit == 'ja'
+      - uses: actions/setup-node@v4
+        if: steps.pruefen.outputs.bereit == 'ja'
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        if: steps.pruefen.outputs.bereit == 'ja'
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Web-Teil bauen und ins Android-Projekt übernehmen
+        if: steps.pruefen.outputs.bereit == 'ja'
+        run: |
+          npm ci
+          npm run build
+          npx cap sync android
+
+      - name: Signatur-Schlüssel bereitlegen
+        if: steps.pruefen.outputs.bereit == 'ja'
+        env:
+          KEYSTORE_B64: ${{ secrets.WANDER_KEYSTORE_B64 }}
+        run: echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/wander-app.p12"
+
+      - name: APK bauen
+        if: steps.pruefen.outputs.bereit == 'ja'
+        working-directory: android
+        env:
+          WANDER_KEYSTORE: ${{ runner.temp }}/wander-app.p12
+          WANDER_KEYSTORE_PASSWORD: ${{ secrets.WANDER_KEYSTORE_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: APK veröffentlichen
+        if: steps.pruefen.outputs.bereit == 'ja'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk wander-app.apk
+          gh release view aktuell >/dev/null 2>&1 || gh release create aktuell --title "Wander-App fürs Handy" --notes "Immer die neueste Version. Auf dem Android-Handy wander-app.apk antippen und installieren."
+          gh release upload aktuell wander-app.apk --clobber

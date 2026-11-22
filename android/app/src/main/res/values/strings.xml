@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Wander-App</string>
+    <string name="title_activity_main">Wander-App</string>
+    <string name="package_name">de.wanderapp.privat</string>
+    <string name="custom_url_scheme">de.wanderapp.privat</string>
+</resources>

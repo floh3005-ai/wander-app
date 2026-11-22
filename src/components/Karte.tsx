@@ -30,6 +30,15 @@ interface Props {
   /** Wanderroute als blaue Vorschau */
   vorschau: [number, number][] | null
   onAusschnitt: (rahmen: [number, number, number, number], zoom: number) => void
+  /** Wegpunkte lassen sich nicht ziehen (Unterwegs-Ansicht, aufgezeichnete Wanderungen) */
+  fest?: boolean
+  /** Aufgezeichnete Spur der laufenden Wanderung */
+  spur?: [number, number][]
+  /** Eigener Standort */
+  position?: { lon: number; lat: number } | null
+  /** Karte bleibt auf dem eigenen Standort */
+  folgen?: boolean
+  onVonHandBewegt?: () => void
   onKarteKlick: (lon: number, lat: number) => void
   onLinieKlick: (abschnitt: number, lon: number, lat: number) => void
   onVerschoben: (index: number, lon: number, lat: number) => void
@@ -67,6 +76,7 @@ const STIL: maplibregl.StyleSpecification = {
     offen: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
     vorschau: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
     stufen: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
+    spur: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
   },
   layers: [
     { id: 'topo', type: 'raster', source: 'topo' },
@@ -107,6 +117,20 @@ const STIL: maplibregl.StyleSpecification = {
       paint: { 'line-color': ['get', 'farbe'], 'line-width': 2.6 },
     },
     {
+      id: 'spur-rand',
+      type: 'line',
+      source: 'spur',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': '#ffffff', 'line-width': 8 },
+    },
+    {
+      id: 'spur',
+      type: 'line',
+      source: 'spur',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': '#1f8fe0', 'line-width': 5 },
+    },
+    {
       id: 'route-treffer',
       type: 'line',
       source: 'route',
@@ -121,6 +145,7 @@ export default function Karte(props: Props) {
   const marker = useRef<maplibregl.Marker[]>([])
   const hoverMarker = useRef<maplibregl.Marker | null>(null)
   const ortMarker = useRef(new Map<string, maplibregl.Marker>())
+  const ichMarker = useRef<maplibregl.Marker | null>(null)
   const aktuell = useRef(props)
   aktuell.current = props
   const [bereit, setBereit] = useState(false)
@@ -155,6 +180,7 @@ export default function Karte(props: Props) {
       melde()
     })
     map.on('moveend', melde)
+    map.on('dragstart', () => aktuell.current.onVonHandBewegt?.())
 
     map.on('click', (e) => {
       const p = e.point
@@ -261,14 +287,14 @@ export default function Karte(props: Props) {
       const el = document.createElement('div')
       el.className = 'wp' + (i === 0 ? ' wp-start' : i === letzter ? ' wp-ziel' : '')
       el.textContent = i === 0 ? 'S' : i === letzter ? 'Z' : String(i)
-      el.title = 'Ziehen = verschieben · Rechtsklick = entfernen'
+      if (!props.fest) el.title = 'Ziehen = verschieben · Rechtsklick = entfernen'
       el.addEventListener('click', (ev) => ev.stopPropagation())
       el.addEventListener('contextmenu', (ev) => {
         ev.preventDefault()
         ev.stopPropagation()
         aktuell.current.onEntfernen(i)
       })
-      const m = new maplibregl.Marker({ element: el, draggable: true })
+      const m = new maplibregl.Marker({ element: el, draggable: !props.fest })
         .setLngLat([w.lon, w.lat])
         .addTo(map)
       m.on('dragend', () => {
@@ -277,7 +303,7 @@ export default function Karte(props: Props) {
       })
       return m
     })
-  }, [props.wegpunkte, bereit])
+  }, [props.wegpunkte, props.fest, bereit])
 
   // Punkt aus dem Höhenprofil
   useEffect(() => {
@@ -355,6 +381,44 @@ export default function Karte(props: Props) {
         : [],
     })
   }, [props.vorschau, bereit])
+
+  // Aufgezeichnete Spur
+  useEffect(() => {
+    const map = karte.current
+    if (!map || !bereit) return
+    const spur = props.spur ?? []
+    ;(map.getSource('spur') as maplibregl.GeoJSONSource).setData({
+      type: 'FeatureCollection',
+      features:
+        spur.length > 1
+          ? [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: spur } }]
+          : [],
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.spur?.length, bereit])
+
+  // Eigener Standort
+  useEffect(() => {
+    const map = karte.current
+    if (!map || !bereit) return
+    const p = props.position
+    if (!p) {
+      ichMarker.current?.remove()
+      ichMarker.current = null
+      return
+    }
+    if (!ichMarker.current) {
+      const el = document.createElement('div')
+      el.className = 'ich-punkt'
+      ichMarker.current = new maplibregl.Marker({ element: el }).setLngLat([p.lon, p.lat]).addTo(map)
+    } else {
+      ichMarker.current.setLngLat([p.lon, p.lat])
+    }
+    if (props.folgen) {
+      map.easeTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 15), duration: 500 })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.position?.lon, props.position?.lat, props.folgen, bereit])
 
   // Kartenstil umschalten
   useEffect(() => {

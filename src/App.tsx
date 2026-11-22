@@ -3,6 +3,9 @@ import Karte, { type Flug } from './components/Karte'
 import Hoehenprofil from './components/Hoehenprofil'
 import AmWeg from './components/AmWeg'
 import Schwierigkeit from './components/Schwierigkeit'
+import Unterwegs from './components/Unterwegs'
+import { ladeLauf } from './lib/aufzeichnung'
+import { istApp } from './lib/standort'
 import { umgedreht } from './lib/schwierigkeit'
 import Konto, { type AbgleichStand } from './components/Konto'
 import { abgleichen, zusammenfuehren } from './lib/abgleich'
@@ -67,6 +70,9 @@ function kennzahlen(tour: Tour) {
   const strecke = kumuliert(punkte)
   const meter = strecke[strecke.length - 1] ?? 0
   const h = hoehenmeter(punkte)
+  const a = tour.aufzeichnung
+  // Aufgezeichnete Wanderung: die gemessenen Werte zeigen, nicht nachrechnen
+  if (a) return { punkte, meter: a.meter, max: h.max, min: h.min, auf: a.auf, ab: a.ab, minuten: a.gehzeit / 60 }
   return { punkte, meter, ...h, minuten: gehzeitMinuten(meter, h.auf, h.ab) }
 }
 
@@ -105,6 +111,10 @@ export default function App() {
   const [gewaehlterOrt, setGewaehlterOrt] = useState<{ nr: number; ort: Ort } | null>(null)
   const [vorschau, setVorschau] = useState<[number, number][] | null>(null)
   const ausschnitt = useRef<{ rahmen: [number, number, number, number]; zoom: number } | null>(null)
+  // Am Handy (oder wenn gerade aufgezeichnet wird) gleich in die Unterwegs-Ansicht
+  const [modus, setModus] = useState<'planen' | 'unterwegs'>(() =>
+    istApp || window.innerWidth < 700 || ladeLauf() ? 'unterwegs' : 'planen',
+  )
   const [email, setEmail] = useState<string | null>(null)
   const [abgleich, setAbgleich] = useState<AbgleichStand>('aus')
   const [abgleichZeit, setAbgleichZeit] = useState<Date | null>(null)
@@ -265,7 +275,22 @@ export default function App() {
       })
   }
 
+  /** Aufgezeichnete Wanderungen bleiben, wie sie gelaufen wurden. */
+  function gesperrt(): boolean {
+    if (!aktiv.aufzeichnung) return false
+    setMeldung('Das ist eine aufgezeichnete Wanderung. Zum Ändern erst „Als neue Tour planen“ wählen.')
+    return true
+  }
+
+  /** Aus einer aufgezeichneten Wanderung eine neue, planbare Tour machen. */
+  function alsVorlage() {
+    const tour = ausPunkten(`${aktiv.name} (geplant)`, zahlen.punkte)
+    setTouren((alle) => [tour, ...alle])
+    setAktivId(tour.id)
+  }
+
   function punktDazu(lon: number, lat: number) {
+    if (gesperrt()) return
     const neu: Wegpunkt = { lon, lat }
     const vorher = aktiv.wegpunkte[aktiv.wegpunkte.length - 1]
     aendere((t) => ({
@@ -277,6 +302,7 @@ export default function App() {
   }
 
   function punktVerschoben(i: number, lon: number, lat: number) {
+    if (gesperrt()) return
     const neu: Wegpunkt = { lon, lat }
     const davor = aktiv.wegpunkte[i - 1]
     const danach = aktiv.wegpunkte[i + 1]
@@ -293,6 +319,7 @@ export default function App() {
   }
 
   function punktEntfernen(i: number) {
+    if (gesperrt()) return
     const davor = aktiv.wegpunkte[i - 1]
     const danach = aktiv.wegpunkte[i + 1]
     aendere((t) => {
@@ -309,6 +336,7 @@ export default function App() {
 
   /** Klick auf die Linie: dort einen neuen Wegpunkt einfügen, den man dann ziehen kann. */
   function linieGeklickt(nr: number, lon: number, lat: number) {
+    if (gesperrt()) return
     const abschnitt = aktiv.abschnitte[nr]
     if (!abschnitt || abschnitt.length < 3) return
     const k = Math.min(abschnitt.length - 2, Math.max(1, naechsterIndex(abschnitt, lon, lat)))
@@ -323,12 +351,14 @@ export default function App() {
   }
 
   function zurueckZumStart() {
+    if (gesperrt()) return
     const erster = aktiv.wegpunkte[0]
     if (!erster || aktiv.wegpunkte.length < 2) return
     punktDazu(erster.lon, erster.lat)
   }
 
   function umkehren() {
+    if (gesperrt()) return
     aendere((t) => ({
       ...t,
       wegpunkte: t.wegpunkte.slice().reverse(),
@@ -469,24 +499,42 @@ export default function App() {
     [aktiv.orte, sichtbar],
   )
 
+  const konto = (
+    <Konto
+      eingerichtet={cloud !== null}
+      email={email}
+      stand={abgleich}
+      zuletzt={abgleichZeit}
+      fehler={abgleichFehler}
+      onAnmelden={anmelden}
+      onAbmelden={() => cloud?.auth.signOut()}
+      onAbgleichen={gleicheAb}
+    />
+  )
+
+  if (modus === 'unterwegs') {
+    return (
+      <Unterwegs
+        touren={touren.filter(nichtLeer)}
+        konto={konto}
+        onSpeichern={(tour) => setTouren((alle) => [tour, ...alle])}
+        onZumPlaner={() => setModus('planen')}
+      />
+    )
+  }
+
   return (
     <div className="app">
       <aside className="seite">
         <header className="kopf">
           <h1>Wander-App</h1>
           <span className="stufe">Tourenplaner</span>
+          <button type="button" className="zu-unterwegs" onClick={() => setModus('unterwegs')}>
+            🥾 Unterwegs
+          </button>
         </header>
 
-        <Konto
-          eingerichtet={cloud !== null}
-          email={email}
-          stand={abgleich}
-          zuletzt={abgleichZeit}
-          fehler={abgleichFehler}
-          onAnmelden={anmelden}
-          onAbmelden={() => cloud?.auth.signOut()}
-          onAbgleichen={gleicheAb}
-        />
+        {konto}
 
         <form className="suche" onSubmit={ortSuchen}>
           <input
@@ -559,10 +607,25 @@ export default function App() {
             </div>
           </dl>
 
-          <Schwierigkeit
+          {!aktiv.aufzeichnung && <Schwierigkeit
             punkte={zahlen.punkte}
             onZeigen={(p) => fliege({ mitte: [p[0], p[1]], zoom: 15 })}
-          />
+          />}
+
+          {aktiv.aufzeichnung && (
+            <p className="gewandert">
+              🥾 Aufgezeichnet am{' '}
+              {new Date(aktiv.aufzeichnung.beginn).toLocaleDateString('de-DE', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+              . Die Werte sind gemessen.{' '}
+              <button type="button" onClick={alsVorlage}>
+                Als neue Tour planen
+              </button>
+            </p>
+          )}
 
           <p className="hinweis">
             {aktiv.wegpunkte.length === 0
@@ -666,7 +729,10 @@ export default function App() {
               return (
                 <li key={t.id}>
                   <button type="button" className="tour-knopf" onClick={() => setAktivId(t.id)}>
-                    <span className="tour-name">{t.name || 'Ohne Namen'}</span>
+                    <span className="tour-name">
+                      {t.aufzeichnung ? '🥾 ' : ''}
+                      {t.name || 'Ohne Namen'}
+                    </span>
                     <span className="tour-info">
                       {formatKm(z.meter)} km · {Math.round(z.auf)} m bergauf · {formatDauer(z.minuten)}
                     </span>
@@ -697,6 +763,7 @@ export default function App() {
             orte={orteAufKarte}
             gewaehlterOrt={gewaehlterOrt}
             vorschau={vorschau}
+            fest={!!aktiv.aufzeichnung}
             onAusschnitt={(rahmen, zoom) => (ausschnitt.current = { rahmen, zoom })}
           />
           <div className="schalter">

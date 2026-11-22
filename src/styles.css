@@ -1215,3 +1215,269 @@ summary:focus-visible {
 .schwer-leer {
   margin-bottom: 12px;
 }
+
+/* ---------- Unterwegs (Handy) ---------- */
+
+.zu-unterwegs {
+  margin-left: auto;
+  font-size: 13px;
+  padding: 4px 10px;
+  background: var(--gruen);
+  border-color: #5fc23e;
+}
+
+.gewandert {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--blau-hell);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.gewandert button {
+  font-size: 12.5px;
+  padding: 3px 10px;
+}
+
+.ich-punkt {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1f8fe0;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 6px rgba(31, 143, 224, 0.25), 0 1px 4px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.uw {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.uw-start {
+  gap: 14px;
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  overflow-y: auto;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  background: linear-gradient(175deg, #ffd3e8 0%, #d9f0ff 38%, #fff3b8 70%, #d8f7c9 100%);
+}
+
+.uw-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.uw-kopf h1 {
+  margin: 0;
+  font-size: 26px;
+  color: var(--fuchsia);
+}
+
+.uw-kopf button {
+  font-size: 13px;
+  padding: 5px 12px;
+}
+
+.uw-hinweis {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--gruen);
+  font-weight: 600;
+}
+
+.uw-gross {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 16px;
+  border-radius: 22px;
+  font-size: 22px;
+  box-shadow: 0 4px 0 var(--fuchsia-dunkel);
+}
+
+.uw-gross span {
+  font-size: 13.5px;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.uw-block {
+  background: var(--gelb-hell);
+  border-top: 6px solid var(--gelb);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 3px 0 rgba(194, 24, 155, 0.18);
+}
+
+.uw-gewandert {
+  background: var(--blau-hell);
+  border-top-color: var(--blau);
+}
+
+.uw-block h2 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+.uw-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.uw-liste li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 14px;
+}
+
+.uw-liste li div {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.uw-liste strong {
+  overflow-wrap: anywhere;
+}
+
+.uw-liste span {
+  font-size: 13px;
+  color: var(--grau);
+}
+
+.uw-liste button {
+  flex: none;
+  padding: 9px 16px;
+}
+
+.uw-laeuft {
+  background: #fff;
+}
+
+.uw-karte {
+  position: relative;
+  flex: 1;
+  min-height: 180px;
+}
+
+.uw-zustand {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--gelb);
+  font-size: 13.5px;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.uw-zustand.an {
+  background: var(--gruen);
+}
+
+.uw-zentrieren {
+  position: absolute;
+  right: 10px;
+  bottom: 14px;
+  padding: 8px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.uw-unten {
+  flex: none;
+  padding: 12px 14px 14px;
+  border-top: 4px solid var(--pink);
+  background: linear-gradient(180deg, #fff 0%, var(--pink-hell) 100%);
+  max-height: 62%;
+  overflow-y: auto;
+}
+
+.uw-zahlen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.uw-zahlen div {
+  padding: 8px 10px;
+  border-radius: 14px;
+  min-width: 0;
+}
+
+.uw-zahlen div:nth-child(1) { background: var(--pink-hell); }
+.uw-zahlen div:nth-child(2) { background: var(--blau-hell); }
+.uw-zahlen div:nth-child(3) { background: var(--gelb-hell); }
+.uw-zahlen div:nth-child(4) { background: var(--gruen-hell); }
+.uw-zahlen div:nth-child(5) { background: #f7dcf3; }
+.uw-zahlen div:nth-child(6) { background: var(--blau-hell); }
+
+.uw-zahlen dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--grau);
+}
+
+.uw-zahlen dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fuchsia-dunkel);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.uw-rest {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--blau);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.uw-knoepfe {
+  display: flex;
+  gap: 8px;
+}
+
+.uw-knoepfe button {
+  flex: 1;
+  padding: 13px 10px;
+  font-size: 16px;
+}
+
+.uw-fertig {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.uw-fertig .uw-knoepfe {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 380px) {
+  .uw-zahlen dd {
+    font-size: 19px;
+  }
+}

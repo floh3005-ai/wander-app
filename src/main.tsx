@@ -1,5 +1,7 @@
 import { Component, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { App as Geraet } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import App from './App'
 import './styles.css'
 
@@ -23,6 +25,14 @@ class Auffangnetz extends Component<{ children: ReactNode }, { fehler: boolean }
       </div>
     )
   }
+}
+
+// Handy-App: Die Zurück-Taste soll die App nur in den Hintergrund legen, nicht
+// beenden – sonst würde eine laufende Aufzeichnung abbrechen.
+if (Capacitor.isNativePlatform()) {
+  Geraet.addListener('backButton', () => {
+    Geraet.minimizeApp()
+  })
 }
 
 createRoot(document.getElementById('root')!).render(

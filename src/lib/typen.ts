@@ -25,6 +25,21 @@ export interface Tour {
   orteFuer?: string
   /** Geplanter Tag und Startzeit, z. B. 2026-11-23 und 09:00 */
   start?: { datum: string; zeit: string }
+  /**
+   * Nur bei aufgezeichneten Wanderungen: die gemessenen Werte. Solche Touren
+   * werden im Planer nicht verändert, sondern nur angesehen oder als Vorlage kopiert.
+   */
+  aufzeichnung?: {
+    beginn: string
+    ende: string
+    /** reine Gehzeit in Sekunden */
+    gehzeit: number
+    meter: number
+    auf: number
+    ab: number
+    /** ID der geplanten Tour, der gefolgt wurde */
+    geplant?: string
+  }
 }
 
 export function neueTour(): Tour {

@@ -1,0 +1,8 @@
+{
+  "appId": "de.wanderapp.privat",
+  "appName": "Wander-App",
+  "webDir": "dist",
+  "android": {
+    "useLegacyBridge": true
+  }
+}
