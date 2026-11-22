@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import type { Feature } from 'geojson'
 import type { FotoInfo, Ort, Punkt, Wegpunkt } from '../lib/typen'
+import { PROTOKOLL, richteOfflineKartenEin } from '../lib/offline'
 import { zeichenFuer } from '../lib/orte'
 import { strecken, stufe } from '../lib/schwierigkeit'
 import { ladeAnsicht, speichereAnsicht } from '../lib/speicher'
@@ -51,13 +52,15 @@ interface Props {
 }
 
 maplibregl.setWorkerUrl(workerUrl)
+richteOfflineKartenEin()
 
 const STIL: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
     topo: {
       type: 'raster',
-      tiles: ['a', 'b', 'c'].map((s) => `https://${s}.tile.opentopomap.org/{z}/{x}/{y}.png`),
+      // über den Gerätespeicher – so bleibt die Karte auch ohne Netz sichtbar (siehe offline.ts)
+      tiles: [`${PROTOKOLL}://{z}/{x}/{y}`],
       tileSize: 256,
       maxzoom: 17,
       attribution:

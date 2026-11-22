@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App-Symbol: zwei Berge mit Sonne. Das Motiv liegt in der sicheren Mitte (66 von 108). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Sonne -->
+    <path
+        android:fillColor="#FFD84A"
+        android:pathData="M70,38m-9,0a9,9 0,1 1,18 0a9,9 0,1 1,-18 0" />
+    <!-- hinterer Berg -->
+    <path
+        android:fillColor="#8FD3FF"
+        android:pathData="M44,78L64,46L84,78Z" />
+    <!-- vorderer Berg -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,78L46,38L68,78Z" />
+    <!-- Schneekappe -->
+    <path
+        android:fillColor="#FFE0EF"
+        android:pathData="M46,38L53,51L48,48L44,52L41,47Z" />
+    <!-- Weg -->
+    <path
+        android:strokeColor="#9BE37F"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M34,78C40,72 44,74 46,68C48,62 54,64 56,58" />
+</vector>

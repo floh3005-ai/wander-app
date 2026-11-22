@@ -2151,3 +2151,111 @@ summary:focus-visible {
 .uw-zentrieren {
   bottom: 46px;
 }
+
+/* ---------- Stufe 6: Karten ohne Netz, Statistik ---------- */
+
+.klapp:nth-of-type(5) {
+  background: var(--gruen-hell);
+  border-top: 6px solid var(--gruen);
+}
+
+.uw-tour-knoepfe {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.uw-liste .uw-karte-knopf {
+  padding: 4px 10px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stat-zeile h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.stat-zeile dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0;
+}
+
+.stat-zeile dl div {
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.stat-zeile dt {
+  font-size: 11.5px;
+  color: var(--grau);
+}
+
+.stat-zeile dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fuchsia-dunkel);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-balken {
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  height: 110px;
+  padding: 6px 6px 0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.stat-balken > div {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.stat-wert {
+  font-size: 10px;
+  color: var(--grau);
+}
+
+.stat-saeule {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--fuchsia);
+}
+
+.stat-monat {
+  font-size: 9.5px;
+  color: var(--grau);
+  padding: 2px 0 4px;
+}
+
+.stat .leise {
+  margin: 0;
+}
+
+.stat-rekord {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.6;
+}

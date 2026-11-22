@@ -4,6 +4,7 @@ import Hoehenprofil from './components/Hoehenprofil'
 import AmWeg from './components/AmWeg'
 import Fotos, { FotoGross } from './components/Fotos'
 import Schwierigkeit from './components/Schwierigkeit'
+import Statistik from './components/Statistik'
 import { ladeFotosHoch, loescheBild, merkeBild, waehleDateien } from './lib/fotos'
 import Unterwegs from './components/Unterwegs'
 import { ladeLauf } from './lib/aufzeichnung'
@@ -382,10 +383,13 @@ export default function App() {
   }
 
   function loeschen(tour: Tour) {
-    if (!window.confirm(`Tour „${tour.name || 'Ohne Namen'}“ wirklich löschen?`)) return
+    if (!window.confirm(
+        `Tour „${tour.name || 'Ohne Namen'}“ wirklich löschen?${tour.fotos?.length ? ` Ihre ${tour.fotos.length} Fotos werden mit gelöscht.` : ''}`,
+      )) return
     if (nichtLeer(tour)) {
       speichereGeloeschte({ ...ladeGeloeschte(), [tour.id]: new Date().toISOString() })
     }
+    for (const f of tour.fotos ?? []) loescheBild(f.id).catch(() => {})
     const rest = touren.filter((t) => t.id !== tour.id)
     if (tour.id === aktivId || rest.length === 0) {
       const t = neueTour()
@@ -731,6 +735,11 @@ export default function App() {
             onVorschau={routeVorschau}
             onUebernehmen={routeUebernehmen}
           />
+        </details>
+
+        <details className="klapp">
+          <summary>Statistik</summary>
+          <Statistik touren={touren} />
         </details>
 
         <section className="liste-block">
