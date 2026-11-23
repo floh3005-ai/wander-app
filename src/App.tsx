@@ -611,6 +611,11 @@ export default function App() {
         touren={touren.filter(nichtLeer)}
         konto={konto}
         onSpeichern={(tour) => setTouren((alle) => [tour, ...alle])}
+        onUmbenennen={(id, name) =>
+          setTouren((alle) =>
+            alle.map((t) => (t.id === id ? { ...t, name, geaendert: new Date().toISOString() } : t)),
+          )
+        }
         onZumPlaner={() => setModus('planen')}
       />
     )

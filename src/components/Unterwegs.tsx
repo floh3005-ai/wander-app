@@ -35,6 +35,8 @@ interface Props {
   /** Anmelde-Kachel (Cloud-Status) */
   konto: ReactNode
   onSpeichern: (tour: Tour) => void
+  /** Namen einer gespeicherten Wanderung nachträglich ändern */
+  onUmbenennen: (id: string, name: string) => void
   onZumPlaner: () => void
 }
 
@@ -63,7 +65,7 @@ function datumText(iso: string | number): string {
   return new Date(iso).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: Props) {
+export default function Unterwegs({ touren, konto, onSpeichern, onUmbenennen, onZumPlaner }: Props) {
   const lauf = useRef<Lauf | null>(null)
   const beende = useRef<(() => void) | null>(null)
   const zuletztGemerkt = useRef(0)
@@ -73,6 +75,7 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
   const [aktiv, setAktiv] = useState(false)
   const [fertig, setFertig] = useState(false)
   const [name, setName] = useState('')
+  const [umbenennen, setUmbenennen] = useState<{ id: string; name: string } | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [folgen, setFolgen] = useState(true)
@@ -448,12 +451,49 @@ export default function Unterwegs({ touren, konto, onSpeichern, onZumPlaner }: P
               {gewandert.map((t) => (
                 <li key={t.id}>
                   <div>
-                    <strong>{t.name}</strong>
+                    {umbenennen?.id === t.id ? (
+                      <form
+                        className="uw-name"
+                        onSubmit={(ev) => {
+                          ev.preventDefault()
+                          const name = umbenennen.name.trim()
+                          if (name) onUmbenennen(t.id, name)
+                          setUmbenennen(null)
+                        }}
+                      >
+                        <input
+                          type="text"
+                          autoFocus
+                          value={umbenennen.name}
+                          onChange={(e) => setUmbenennen({ id: t.id, name: e.target.value })}
+                          aria-label="Name der Wanderung"
+                        />
+                        <button type="submit" className="haupt">
+                          Speichern
+                        </button>
+                        <button type="button" onClick={() => setUmbenennen(null)}>
+                          Abbrechen
+                        </button>
+                      </form>
+                    ) : (
+                      <strong>{t.name || 'Ohne Namen'}</strong>
+                    )}
                     <span>
                       {datumText(t.aufzeichnung!.beginn)} · {formatKm(t.aufzeichnung!.meter)} km ·{' '}
                       {t.aufzeichnung!.auf} m bergauf · {formatDauer(t.aufzeichnung!.gehzeit / 60)}
                     </span>
                   </div>
+                  {umbenennen?.id !== t.id && (
+                    <button
+                      type="button"
+                      className="uw-stift"
+                      onClick={() => setUmbenennen({ id: t.id, name: t.name })}
+                      aria-label="Namen ändern"
+                      title="Namen ändern"
+                    >
+                      ✏️
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

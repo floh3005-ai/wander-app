@@ -2525,3 +2525,32 @@ summary:focus-visible {
   font-size: 14px;
   cursor: pointer;
 }
+
+/* Wanderung nachträglich umbenennen */
+.uw-liste .uw-stift {
+  padding: 6px 9px;
+  background: var(--pink-hell);
+  border: 0;
+  font-size: 15px;
+}
+
+.uw-name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.uw-name input {
+  flex: 1 1 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 2px solid var(--pink);
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.uw-liste .uw-name button {
+  padding: 6px 12px;
+  font-size: 13px;
+}
