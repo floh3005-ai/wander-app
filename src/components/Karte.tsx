@@ -8,6 +8,7 @@ import { holeBild } from '../lib/fotos'
 import { PROTOKOLL, richteOfflineKartenEin } from '../lib/offline'
 import { zeichenFuer } from '../lib/orte'
 import { strecken, stufe } from '../lib/schwierigkeit'
+import { routenImAusschnitt } from '../lib/vorlagen'
 import { ladeAnsicht, speichereAnsicht } from '../lib/speicher'
 
 export interface Flug {
@@ -468,6 +469,63 @@ export default function Karte(props: Props) {
       adressen.forEach((a) => URL.revokeObjectURL(a))
     }
   }, [props.fotos, bereit])
+
+  // Markierte Wanderwege: voller Name beim Darüberfahren (statt nur des Kürzels auf der Karte)
+  useEffect(() => {
+    const map = karte.current
+    if (!map || !bereit || !props.wanderwege) return
+    let warten: ReturnType<typeof setTimeout> | null = null
+    let schild: maplibregl.Popup | null = null
+    let frage = 0
+    const weg = () => {
+      if (warten) clearTimeout(warten)
+      warten = null
+      frage++
+      schild?.remove()
+      schild = null
+    }
+    const bewegt = (e: maplibregl.MapMouseEvent) => {
+      weg()
+      if (map.getZoom() < 11 || e.originalEvent.buttons !== 0) return
+      const nr = frage
+      const p = e.point
+      const stelle = e.lngLat
+      // Kurz warten, bis die Maus ruhig steht – erst dann nachfragen
+      warten = setTimeout(async () => {
+        const a = map.unproject([p.x - 7, p.y + 7])
+        const b = map.unproject([p.x + 7, p.y - 7])
+        const routen = await routenImAusschnitt([a.lng, a.lat, b.lng, b.lat]).catch(() => [])
+        if (nr !== frage || routen.length === 0) return
+        const liste = document.createElement('ul')
+        for (const r of routen.slice(0, 6)) {
+          const li = document.createElement('li')
+          const name = document.createElement('strong')
+          name.textContent = r.name
+          li.append(name)
+          const zusatz = [r.kuerzel, r.ebene].filter(Boolean).join(' · ')
+          if (zusatz) {
+            const klein = document.createElement('span')
+            klein.textContent = zusatz
+            li.append(klein)
+          }
+          liste.append(li)
+        }
+        schild = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, className: 'weg-name', maxWidth: '280px' })
+          .setLngLat(stelle)
+          .setDOMContent(liste)
+          .addTo(map)
+      }, 450)
+    }
+    map.on('mousemove', bewegt)
+    map.on('mouseout', weg)
+    map.on('movestart', weg)
+    return () => {
+      weg()
+      map.off('mousemove', bewegt)
+      map.off('mouseout', weg)
+      map.off('movestart', weg)
+    }
+  }, [props.wanderwege, bereit])
 
   // Gesuchter Ort: Fähnchen mit Namen und Pfeil auf die Stelle
   useEffect(() => {
